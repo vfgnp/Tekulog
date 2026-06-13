@@ -114,4 +114,17 @@ final class WalkRepository {
             try context.save()
         }
     }
+
+    /// セッションを UUID で削除する。通知の「破棄」アクションから呼ぶ。
+    func deleteSession(withID id: UUID) async throws {
+        let context = persistence.newBackgroundContext()
+        try await context.perform {
+            let request = WalkSession.fetchRequest()
+            request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+            request.fetchLimit = 1
+            guard let session = try context.fetch(request).first as? WalkSession else { return }
+            context.delete(session)
+            try context.save()
+        }
+    }
 }
