@@ -22,7 +22,6 @@ final class ActivityDetector {
     private(set) var mode: Mode = .idle
 
     private let manager = CMMotionActivityManager()
-    private let queue = OperationQueue()
     private var evaluationTimer: Timer?
 
     /// 直近に観測した「記録対象の活動種別」と、その状態が始まった時刻。
@@ -34,17 +33,15 @@ final class ActivityDetector {
 
     static var isAvailable: Bool { CMMotionActivityManager.isActivityAvailable() }
 
-    init() {
-        queue.maxConcurrentOperationCount = 1
-        queue.qualityOfService = .utility
-    }
-
     /// 監視を開始する。アプリ起動時 / 権限取得後に呼ぶ。
     func start() {
         guard Self.isAvailable else { return }
-        manager.startActivityUpdates(to: queue) { [weak self] activity in
+        // ハンドラは @MainActor 隔離。メインキューで受けることで「期待 executor=メイン /
+        // 実行=バックグラウンド」の不一致による Swift 6 ランタイム SIGTRAP を回避する。
+        // 活動種別の更新は状態変化時のみで低頻度なのでメイン実行で問題ない。
+        manager.startActivityUpdates(to: .main) { [weak self] activity in
             guard let activity else { return }
-            Task { @MainActor in self?.handle(activity) }
+            self?.handle(activity)
         }
         startEvaluationTimer()
     }

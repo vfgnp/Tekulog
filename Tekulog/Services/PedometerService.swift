@@ -32,7 +32,10 @@ final class PedometerService {
         guard Self.isStepCountingAvailable, !isRunning else { return }
         isRunning = true
         snapshot = PedometerSnapshot()
-        pedometer.startUpdates(from: startDate) { [weak self] data, _ in
+        // CMPedometer はハンドラをバックグラウンドキューで呼ぶ。@MainActor 隔離の
+        // クロージャをそのまま渡すと Swift 6 ランタイムが executor 不一致で SIGTRAP するため、
+        // ハンドラを @Sendable(=非隔離)にし、純粋変換だけ即時に行い MainActor へ hop する。
+        pedometer.startUpdates(from: startDate) { @Sendable [weak self] data, _ in
             guard let data else { return }
             let snapshot = Self.makeSnapshot(from: data)
             Task { @MainActor in self?.apply(snapshot) }
@@ -53,7 +56,7 @@ final class PedometerService {
         onUpdate?(snapshot)
     }
 
-    private static func makeSnapshot(from data: CMPedometerData) -> PedometerSnapshot {
+    nonisolated private static func makeSnapshot(from data: CMPedometerData) -> PedometerSnapshot {
         PedometerSnapshot(
             steps: data.numberOfSteps.intValue,
             distance: data.distance?.doubleValue ?? 0,
