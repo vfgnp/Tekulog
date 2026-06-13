@@ -94,6 +94,36 @@ final class WalkRepository: @unchecked Sendable {
         }
     }
 
+    /// `endedAt` より後のルート点を削除し、残った点の総距離(m)を返す。
+    /// 停止検知(30分後)までに記録された末尾の静止点を切り落とすために使う。
+    @discardableResult
+    func trimTrailingPoints(after endedAt: Date, in sessionID: NSManagedObjectID) async throws -> Double {
+        let context = persistence.newBackgroundContext()
+        return try await context.perform {
+            guard let session = try context.existingObject(with: sessionID) as? WalkSession else {
+                return 0
+            }
+            // endedAt より後の点を削除。
+            for point in session.orderedPoints where (point.timestamp ?? .distantPast) > endedAt {
+                context.delete(point)
+            }
+            try context.save()
+
+            // 残った点で総距離を再計算。
+            let remaining = session.orderedPoints
+            var distance: Double = 0
+            var previous: CLLocation?
+            for point in remaining {
+                let location = CLLocation(latitude: point.latitude, longitude: point.longitude)
+                if let previous {
+                    distance += location.distance(from: previous)
+                }
+                previous = location
+            }
+            return distance
+        }
+    }
+
     /// HealthKit のワークアウト UUID を後追いで紐付ける。
     func attachHealthKitWorkout(_ workoutUUID: UUID, to sessionID: NSManagedObjectID) async throws {
         let context = persistence.newBackgroundContext()

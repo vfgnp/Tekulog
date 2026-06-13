@@ -16,8 +16,8 @@ final class ActivityDetector {
 
     /// 記録を開始すべき種別を検知したとき。
     var onShouldStart: ((ActivityKind) -> Void)?
-    /// 記録を終了すべきと判定したとき。
-    var onShouldStop: (() -> Void)?
+    /// 記録を終了すべきと判定したとき。引数は「動きが止まった時刻」(停止が始まった時刻)。
+    var onShouldStop: ((Date) -> Void)?
 
     private(set) var mode: Mode = .idle
 
@@ -99,8 +99,10 @@ final class ActivityDetector {
         case .tracking:
             guard let since = stoppedSince else { return }
             if now.timeIntervalSince(since) >= Tunables.stopDuration {
+                // setMode が stoppedSince を nil クリアする前に停止時刻を退避。
+                let stoppedAt = since
                 setMode(.idle)
-                onShouldStop?()
+                onShouldStop?(stoppedAt)
             }
         }
     }

@@ -30,6 +30,8 @@ final class SessionCoordinator: ObservableObject {
 
     // 現在セッションの状態
     private var sessionID: NSManagedObjectID?
+    /// 進行中セッションの識別トークン。非同期生成の競合(生成完了前に終了)を検出する。
+    private var activeToken: UUID?
     private var currentKind: ActivityKind?
     private var startedAt: Date?
     private var accumulatedDistance: Double = 0
@@ -81,8 +83,8 @@ final class SessionCoordinator: ObservableObject {
         detector.onShouldStart = { [weak self] kind in
             self?.beginSession(kind: kind)
         }
-        detector.onShouldStop = { [weak self] in
-            self?.endSession()
+        detector.onShouldStop = { [weak self] stoppedAt in
+            self?.endSession(stoppedAt: stoppedAt)
         }
         locationTracker.onSample = { [weak self] sample in
             self?.ingest(sample)
@@ -98,8 +100,10 @@ final class SessionCoordinator: ObservableObject {
     // MARK: - セッション開始
 
     private func beginSession(kind: ActivityKind) {
-        guard sessionID == nil else { return }
+        guard sessionID == nil, activeToken == nil else { return }
         let now = Date()
+        let token = UUID()
+        activeToken = token
         currentKind = kind
         startedAt = now
         accumulatedDistance = 0
@@ -118,11 +122,18 @@ final class SessionCoordinator: ObservableObject {
             guard let self else { return }
             do {
                 let id = try await repository.beginSession(kind: kind, startedAt: now)
+                // 生成完了までに終了/破棄/別セッション開始が起きていたら孤児を削除。
+                guard self.activeToken == token else {
+                    try? await self.repository.deleteSession(id)
+                    return
+                }
                 self.sessionID = id
                 self.flushPendingSamples()   // 生成前に溜まった点を書き出す
             } catch {
-                // 生成に失敗したら記録を畳む。
-                self.endSession(discard: true)
+                // 生成に失敗したら(まだ同一セッションなら)記録を畳む。
+                if self.activeToken == token {
+                    self.endSession(discard: true)
+                }
             }
         }
     }
@@ -168,8 +179,9 @@ final class SessionCoordinator: ObservableObject {
 
     // MARK: - セッション終了
 
-    private func endSession(discard: Bool = false) {
-        let endedAt = Date()
+    /// - Parameter stoppedAt: 動きが実際に止まった時刻。停止検知(約30分後)ではなくこの時刻を
+    ///   終了時刻に使い、所要時間・ペース・距離・エネルギーが末尾の静止時間で水増しされるのを防ぐ。
+    private func endSession(stoppedAt: Date? = nil, discard: Bool = false) {
         locationTracker.stop()
         let finalSnapshot = pedometer.stop()
         flushTimer?.invalidate()
@@ -181,10 +193,11 @@ final class SessionCoordinator: ObservableObject {
         let id = sessionID
         let distance = accumulatedDistance
 
-        // 状態リセット(次の検知に備える)。
+        // 状態リセット(次の検知に備える)。トークンも無効化。
         isRecording = false
         live = nil
         sessionID = nil
+        activeToken = nil
         currentKind = nil
         startedAt = nil
         accumulatedDistance = 0
@@ -192,12 +205,15 @@ final class SessionCoordinator: ObservableObject {
 
         guard !discard, let id, let kind, let start else { return }
 
+        // 終了時刻 = 実際に止まった時刻(無ければ現在)。開始より前にならないよう clamp。
+        let endedAt = max(start, stoppedAt ?? Date())
+
         Task { [weak self] in
             await self?.finalize(sessionID: id,
                                  kind: kind,
                                  start: start,
                                  end: endedAt,
-                                 distance: distance,
+                                 liveDistance: distance,
                                  pedometer: finalSnapshot)
         }
     }
@@ -206,10 +222,12 @@ final class SessionCoordinator: ObservableObject {
                           kind: ActivityKind,
                           start: Date,
                           end: Date,
-                          distance: Double,
+                          liveDistance: Double,
                           pedometer snapshot: PedometerSnapshot) async {
-        // 距離は GPS を正とし、無ければ歩数計の距離を使う。
-        let finalDistance = distance > 0 ? distance : snapshot.distance
+        // 終了時刻より後(停止検知までの静止点)を切り落とし、残った点の総距離を正とする。
+        let trimmed = try? await repository.trimTrailingPoints(after: end, in: sessionID)
+        // trim 失敗時はライブ距離→歩数計距離の順でフォールバック。
+        let finalDistance = trimmed ?? (liveDistance > 0 ? liveDistance : snapshot.distance)
         let duration = max(0, end.timeIntervalSince(start))
         let energy = estimatedEnergy(kind: kind, durationSeconds: duration)
         let avgPace = finalDistance > 0 ? duration / finalDistance : 0  // 秒/メートル
