@@ -1,0 +1,34 @@
+# macOS
+.DS_Store
+
+# Xcode user data / build artifacts
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+*.xccheckout
+DerivedData/
+build/
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Generated Xcode project (assembled from project.yml via XcodeGen)
+Tekulog.xcodeproj/
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# CocoaPods / Carthage (未使用だが念のため)
+Pods/
+Carthage/Build/
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+
+# Misc
+*.log
