@@ -47,6 +47,19 @@ enum Tunables {
     /// 明らかに飛んだ精度の点を捨てる上限(m)。
     static let maxAcceptableHorizontalAccuracy: CLLocationDistance = 50
 
+    // MARK: - 消費エネルギー推定
+
+    /// 体重が取得できない場合のデフォルト体重(kg)。SettingsView で上書き想定。
+    static let defaultBodyMassKg: Double = 60
+
+    /// 種別ごとの MET(消費エネルギー = MET × 体重kg × 時間h)。
+    static func metValue(for kind: ActivityKind) -> Double {
+        switch kind {
+        case .walking: return 3.5
+        case .cycling: return 6.0
+        }
+    }
+
     // MARK: - 永続化バッチ
 
     /// ルート点をまとめて Core Data に書き込むバッチサイズ。
