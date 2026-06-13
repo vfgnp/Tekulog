@@ -18,8 +18,10 @@ final class SessionCoordinator: ObservableObject {
         var steps: Int = 0
     }
 
-    @Published private(set) var isRecording = false
     @Published private(set) var live: LiveStats?
+
+    /// 記録中かどうか(`live != nil` と等価の便利アクセサ)。
+    var isRecording: Bool { live != nil }
 
     private let detector: ActivityDetector
     private let locationTracker: LocationTracker
@@ -30,8 +32,9 @@ final class SessionCoordinator: ObservableObject {
 
     // 現在セッションの状態
     private var sessionID: NSManagedObjectID?
-    /// 進行中セッションの識別トークン。非同期生成の競合(生成完了前に終了)を検出する。
-    private var activeToken: UUID?
+    /// 進行中セッションの UUID。WalkSession.id と同値で、通知の識別と
+    /// 非同期生成の競合(生成完了前に終了)検出のトークンを兼ねる。
+    private var currentSessionUUID: UUID?
     private var currentKind: ActivityKind?
     private var startedAt: Date?
     private var accumulatedDistance: Double = 0
@@ -100,17 +103,16 @@ final class SessionCoordinator: ObservableObject {
     // MARK: - セッション開始
 
     private func beginSession(kind: ActivityKind) {
-        guard sessionID == nil, activeToken == nil else { return }
+        guard sessionID == nil, currentSessionUUID == nil else { return }
         let now = Date()
-        let token = UUID()
-        activeToken = token
+        let uuid = UUID()
+        currentSessionUUID = uuid
         currentKind = kind
         startedAt = now
         accumulatedDistance = 0
         lastLocation = nil
         pendingSamples.removeAll()
 
-        isRecording = true
         live = LiveStats(kind: kind, startedAt: now)
 
         locationTracker.start()
@@ -121,9 +123,9 @@ final class SessionCoordinator: ObservableObject {
         Task { [weak self] in
             guard let self else { return }
             do {
-                let id = try await repository.beginSession(kind: kind, startedAt: now)
+                let id = try await repository.beginSession(id: uuid, kind: kind, startedAt: now)
                 // 生成完了までに終了/破棄/別セッション開始が起きていたら孤児を削除。
-                guard self.activeToken == token else {
+                guard self.currentSessionUUID == uuid else {
                     try? await self.repository.deleteSession(id)
                     return
                 }
@@ -131,7 +133,7 @@ final class SessionCoordinator: ObservableObject {
                 self.flushPendingSamples()   // 生成前に溜まった点を書き出す
             } catch {
                 // 生成に失敗したら(まだ同一セッションなら)記録を畳む。
-                if self.activeToken == token {
+                if self.currentSessionUUID == uuid {
                     self.endSession(discard: true)
                 }
             }
@@ -191,25 +193,26 @@ final class SessionCoordinator: ObservableObject {
         let kind = currentKind
         let start = startedAt
         let id = sessionID
+        let uuid = currentSessionUUID
         let distance = accumulatedDistance
 
-        // 状態リセット(次の検知に備える)。トークンも無効化。
-        isRecording = false
+        // 状態リセット(次の検知に備える)。
         live = nil
         sessionID = nil
-        activeToken = nil
+        currentSessionUUID = nil
         currentKind = nil
         startedAt = nil
         accumulatedDistance = 0
         lastLocation = nil
 
-        guard !discard, let id, let kind, let start else { return }
+        guard !discard, let id, let uuid, let kind, let start else { return }
 
         // 終了時刻 = 実際に止まった時刻(無ければ現在)。開始より前にならないよう clamp。
         let endedAt = max(start, stoppedAt ?? Date())
 
         Task { [weak self] in
             await self?.finalize(sessionID: id,
+                                 sessionUUID: uuid,
                                  kind: kind,
                                  start: start,
                                  end: endedAt,
@@ -219,6 +222,7 @@ final class SessionCoordinator: ObservableObject {
     }
 
     private func finalize(sessionID: NSManagedObjectID,
+                          sessionUUID: UUID,
                           kind: ActivityKind,
                           start: Date,
                           end: Date,
@@ -247,24 +251,15 @@ final class SessionCoordinator: ObservableObject {
 
         try? await repository.finalizeSession(sessionID, endedAt: end, metrics: metrics)
 
-        // 保存通知のため UUID を取り直す。
-        if let sessionUUID = await sessionUUID(for: sessionID) {
-            notifications.notifyRecordingSaved(kind: kind,
-                                               distanceMeters: finalDistance,
-                                               steps: snapshot.steps,
-                                               sessionID: sessionUUID)
-        }
+        // 採番済みの UUID をそのまま使って保存通知(再フェッチ不要)。
+        notifications.notifyRecordingSaved(kind: kind,
+                                           distanceMeters: finalDistance,
+                                           steps: snapshot.steps,
+                                           sessionID: sessionUUID)
     }
 
     private func estimatedEnergy(kind: ActivityKind, durationSeconds: TimeInterval) -> Double {
         let hours = durationSeconds / 3600
         return Tunables.metValue(for: kind) * Tunables.defaultBodyMassKg * hours
-    }
-
-    nonisolated private func sessionUUID(for objectID: NSManagedObjectID) async -> UUID? {
-        let context = PersistenceController.shared.newBackgroundContext()
-        return await context.perform {
-            (try? context.existingObject(with: objectID) as? WalkSession)?.id
-        }
     }
 }

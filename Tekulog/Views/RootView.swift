@@ -6,6 +6,7 @@ struct RootView: View {
     @ObservedObject var locationAuth: LocationAuthorization
 
     @AppStorage("didFinishOnboarding") private var didFinishOnboarding = false
+    @State private var showOnboarding = false
 
     var body: some View {
         TabView {
@@ -20,9 +21,11 @@ struct RootView: View {
             }
             .tabItem { Label("設定", systemImage: "gearshape") }
         }
-        .fullScreenCover(isPresented: .constant(!didFinishOnboarding)) {
+        .onAppear { showOnboarding = !didFinishOnboarding }
+        .fullScreenCover(isPresented: $showOnboarding) {
             PermissionsOnboardingView(locationAuth: locationAuth) {
                 didFinishOnboarding = true
+                showOnboarding = false
                 coordinator.startMonitoring()
             }
             .environmentObject(coordinator)
@@ -39,9 +42,12 @@ struct RootView: View {
                 VStack(alignment: .leading, spacing: 1) {
                     Text("\(live.kind.displayName)を記録中")
                         .font(.subheadline.bold())
-                    Text("\(Formatters.distance(live.distanceMeters)) ・ \(Formatters.duration(Date().timeIntervalSince(live.startedAt)))")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    // 経過時間を毎秒更新する(静止中も時間が進む)。
+                    TimelineView(.periodic(from: .now, by: 1)) { context in
+                        Text("\(Formatters.distance(live.distanceMeters)) ・ \(Formatters.duration(context.date.timeIntervalSince(live.startedAt)))")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
                 Spacer()
             }

@@ -41,11 +41,12 @@ final class WalkRepository: @unchecked Sendable {
     }
 
     /// 新しいセッションを作成し、その永続ID を返す。
-    func beginSession(kind: ActivityKind, startedAt: Date) async throws -> NSManagedObjectID {
+    /// `id` は呼び出し側が採番して渡す(通知やレース検出に同じ値を再利用するため)。
+    func beginSession(id: UUID, kind: ActivityKind, startedAt: Date) async throws -> NSManagedObjectID {
         let context = persistence.newBackgroundContext()
         return try await context.perform {
             let session = WalkSession(context: context)
-            session.id = UUID()
+            session.id = id
             session.startedAt = startedAt
             session.activityKind = kind
             try context.save()
