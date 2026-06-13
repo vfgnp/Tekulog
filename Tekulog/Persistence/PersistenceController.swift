@@ -2,13 +2,16 @@ import CoreData
 
 /// Core Data スタック。ストアは端末内のみ。ロック時暗号化のため
 /// `NSFileProtectionComplete` を明示する(spec §6)。
-struct PersistenceController {
+///
+/// `@unchecked Sendable`: 保持する NSPersistentContainer 自体は Sendable ではないが、
+/// 書き込みは常に専用 background context の `perform` 上で行うためスレッド安全。
+struct PersistenceController: @unchecked Sendable {
     static let shared = PersistenceController()
 
     let container: NSPersistentContainer
 
     /// SwiftUI プレビュー / テスト用のインメモリスタック。
-    static var preview: PersistenceController = {
+    static let preview: PersistenceController = {
         let controller = PersistenceController(inMemory: true)
         let ctx = controller.container.viewContext
         let sample = WalkSession(context: ctx)
@@ -48,13 +51,13 @@ struct PersistenceController {
         }
 
         container.viewContext.automaticallyMergesChangesFromParent = true
-        container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+        container.viewContext.mergePolicy = NSMergePolicy.mergeByPropertyObjectTrump
     }
 
     /// バックグラウンドのルート追記・保存用 context を生成する。
     func newBackgroundContext() -> NSManagedObjectContext {
         let context = container.newBackgroundContext()
-        context.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+        context.mergePolicy = NSMergePolicy.mergeByPropertyObjectTrump
         return context
     }
 }

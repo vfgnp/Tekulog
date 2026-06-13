@@ -20,9 +20,11 @@ extension WalkSession {
     }
 
     /// 時系列順のルート座標。地図描画・距離計算に使う。
+    /// `points` は ordered リレーションなので NSOrderedSet。挿入順=時系列だが
+    /// 念のため timestamp で安定ソートする。
     var orderedPoints: [RoutePoint] {
-        let set = points as? Set<RoutePoint> ?? []
-        return set.sorted { ($0.timestamp ?? .distantPast) < ($1.timestamp ?? .distantPast) }
+        let array = (points?.array as? [RoutePoint]) ?? []
+        return array.sorted { ($0.timestamp ?? .distantPast) < ($1.timestamp ?? .distantPast) }
     }
 
     /// 地図ポリライン用の座標配列。

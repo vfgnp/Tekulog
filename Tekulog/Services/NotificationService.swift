@@ -28,7 +28,8 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
     }
 
     func requestAuthorization() async {
-        _ = try? await center.requestAuthorization(options: [.alert, .sound, .badge])
+        _ = try? await UNUserNotificationCenter.current()
+            .requestAuthorization(options: [.alert, .sound, .badge])
     }
 
     /// 記録開始を通知する。

@@ -243,7 +243,7 @@ final class SessionCoordinator: ObservableObject {
         return Tunables.metValue(for: kind) * Tunables.defaultBodyMassKg * hours
     }
 
-    private func sessionUUID(for objectID: NSManagedObjectID) async -> UUID? {
+    nonisolated private func sessionUUID(for objectID: NSManagedObjectID) async -> UUID? {
         let context = PersistenceController.shared.newBackgroundContext()
         return await context.perform {
             (try? context.existingObject(with: objectID) as? WalkSession)?.id

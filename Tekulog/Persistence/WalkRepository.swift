@@ -30,7 +30,10 @@ struct SessionMetrics: Sendable {
 }
 
 /// WalkSession / RoutePoint の永続化操作。書き込みはバックグラウンド context 上で行う。
-final class WalkRepository {
+///
+/// `@unchecked Sendable`: 各メソッドが専用 background context を生成し `perform` 上で
+/// 完結するため、複数スレッド/Task から呼んでも安全。
+final class WalkRepository: @unchecked Sendable {
     private let persistence: PersistenceController
 
     init(persistence: PersistenceController = .shared) {
@@ -122,7 +125,7 @@ final class WalkRepository {
             let request = WalkSession.fetchRequest()
             request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
             request.fetchLimit = 1
-            guard let session = try context.fetch(request).first as? WalkSession else { return }
+            guard let session = try context.fetch(request).first else { return }
             context.delete(session)
             try context.save()
         }
