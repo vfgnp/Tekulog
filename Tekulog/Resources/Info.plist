@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleDisplayName</key>
+	<string>Tekulog</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>UILaunchScreen</key>
+	<dict/>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+	</dict>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+	</array>
+
+	<!-- 利用目的説明(spec §7) -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>散歩・自転車のルートを記録するために、移動中の現在地を使用します。位置情報は端末内にのみ保存され、外部に送信されません。</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>画面ロック中や他アプリ利用中でも散歩・自転車の記録を自動で続けるために、常に位置情報を使用します。位置情報は端末内にのみ保存され、外部に送信されません。</string>
+	<key>NSMotionUsageDescription</key>
+	<string>歩行・自転車の動きを検知して記録を自動開始/終了し、歩数や距離を計測するためにモーションとフィットネスのデータを使用します。</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>運動量のサマリーを表示するために、ヘルスケアのワークアウトデータを読み取ります。</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>記録した散歩・自転車をワークアウトとしてヘルスケアに保存します。</string>
+
+	<!-- バックグラウンド記録(spec §5) -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+		<string>processing</string>
+	</array>
+
+	<!-- ストア時の Data Protection -->
+	<key>NSFileProtectionComplete</key>
+	<true/>
+</dict>
+</plist>

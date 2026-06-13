@@ -1,0 +1,38 @@
+name: Tekulog
+options:
+  bundleIdPrefix: com.vfgnp
+  deploymentTarget:
+    iOS: "18.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+    SWIFT_VERSION: "6.0"
+    DEVELOPMENT_LANGUAGE: ja
+    GENERATE_INFOPLIST_FILE: NO
+
+targets:
+  Tekulog:
+    type: application
+    platform: iOS
+    deploymentTarget: "18.0"
+    sources:
+      - path: Tekulog
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.vfgnp.Tekulog
+        INFOPLIST_FILE: Tekulog/Resources/Info.plist
+        CODE_SIGN_ENTITLEMENTS: Tekulog/Resources/Tekulog.entitlements
+        TARGETED_DEVICE_FAMILY: "1" # iPhone のみ
+        SWIFT_EMIT_LOC_STRINGS: YES
+        ENABLE_USER_SCRIPT_SANDBOXING: YES
+    entitlements:
+      path: Tekulog/Resources/Tekulog.entitlements
+      properties:
+        com.apple.developer.healthkit: true
+        com.apple.developer.healthkit.access: []
+    info:
+      path: Tekulog/Resources/Info.plist
+    # フレームワークは import で自動リンク(Core Motion / Core Location / HealthKit / MapKit)
