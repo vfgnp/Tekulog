@@ -1,0 +1,51 @@
+import Foundation
+
+/// 表示用フォーマッタ群。
+enum Formatters {
+
+    /// 距離(m)→「1.23 km」/「840 m」。
+    static func distance(_ meters: Double) -> String {
+        if meters >= 1000 {
+            return String(format: "%.2f km", meters / 1000)
+        }
+        return String(format: "%.0f m", meters)
+    }
+
+    /// 時間(秒)→「1:23:45」/「12:05」。
+    static func duration(_ seconds: TimeInterval) -> String {
+        let total = Int(seconds.rounded())
+        let h = total / 3600
+        let m = (total % 3600) / 60
+        let s = total % 60
+        if h > 0 {
+            return String(format: "%d:%02d:%02d", h, m, s)
+        }
+        return String(format: "%d:%02d", m, s)
+    }
+
+    /// 平均ペース(秒/メートル)→「12'30\"/km」。0 は「--」。
+    static func pace(secondsPerMeter: Double) -> String {
+        guard secondsPerMeter > 0 else { return "--" }
+        let secPerKm = secondsPerMeter * 1000
+        let m = Int(secPerKm) / 60
+        let s = Int(secPerKm) % 60
+        return String(format: "%d'%02d\"/km", m, s)
+    }
+
+    /// 歩数→「2,850 歩」。
+    static func steps(_ count: Int) -> String {
+        let formatted = NumberFormatter.localizedString(from: NSNumber(value: count), number: .decimal)
+        return "\(formatted) 歩"
+    }
+
+    private static let dateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "ja_JP")
+        f.dateFormat = "M月d日(E) HH:mm"
+        return f
+    }()
+
+    static func dateTime(_ date: Date) -> String {
+        dateFormatter.string(from: date)
+    }
+}

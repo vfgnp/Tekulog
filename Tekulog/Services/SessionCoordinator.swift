@@ -55,9 +55,24 @@ final class SessionCoordinator: ObservableObject {
         wire()
     }
 
-    /// アプリ起動時に呼ぶ。自動検知の監視を開始する。
+    /// アプリ起動直後に呼ぶ。通知カテゴリ/デリゲートを設定する。
+    func bootstrap() {
+        notifications.configure()
+    }
+
+    /// 自動検知の監視を開始する。Motion 権限プロンプトはこの時点で表示される。
     func startMonitoring() {
         detector.start()
+    }
+
+    /// オンボーディングからの権限要求パススルー(権限はプロセス全体に効くため
+    /// Coordinator 所有のインスタンス経由で要求してよい)。
+    func requestNotificationAuthorization() async {
+        await notifications.requestAuthorization()
+    }
+
+    func requestHealthKitAuthorization() async {
+        try? await healthKit.requestAuthorization()
     }
 
     // MARK: - 配線
