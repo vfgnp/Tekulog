@@ -1,32 +1,53 @@
 <svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1024" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#0A84FF"/>
-      <stop offset="1" stop-color="#0040DD"/>
+      <stop offset="0" stop-color="#241B2F"/>
+      <stop offset="1" stop-color="#0E0B16"/>
+    </linearGradient>
+    <linearGradient id="flameOuter" x1="512" y1="150" x2="512" y2="858" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FF2D55"/>
+      <stop offset="0.5" stop-color="#FF6A00"/>
+      <stop offset="1" stop-color="#FFA000"/>
+    </linearGradient>
+    <linearGradient id="flameInner" x1="512" y1="440" x2="512" y2="792" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFD23F"/>
+      <stop offset="1" stop-color="#FFF6D6"/>
     </linearGradient>
   </defs>
 
-  <!-- Background (角丸・影は付けない。iOS が自動でマスクする) -->
   <g id="Background">
     <rect width="1024" height="1024" fill="url(#bg)"/>
   </g>
 
-  <!-- Route (歩いた経路) -->
-  <g id="Route">
-    <path d="M300 736 C392 560 252 470 470 430 C690 390 560 300 728 292"
-          stroke="#FFFFFF" stroke-width="74"
-          stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Embers / sparks -->
+  <g id="Sparks">
+    <circle cx="690" cy="250" r="16" fill="#FFB23F"/>
+    <circle cx="338" cy="226" r="13" fill="#FF7A3F"/>
+    <circle cx="566" cy="86"  r="11" fill="#FFD23F"/>
+    <circle cx="742" cy="372" r="9"  fill="#FFB23F"/>
   </g>
 
-  <!-- Start point (緑) -->
-  <g id="Start">
-    <circle cx="300" cy="736" r="62" fill="#FFFFFF"/>
-    <circle cx="300" cy="736" r="44" fill="#34C759"/>
+  <!-- Outer flame (3 tongues) -->
+  <g id="FlameOuter">
+    <path d="M382 300
+             C 410 360, 430 372, 452 392
+             C 472 360, 496 300, 520 150
+             C 544 300, 568 360, 596 402
+             C 616 380, 640 356, 664 330
+             C 720 420, 752 510, 740 612
+             C 728 742, 632 858, 512 858
+             C 392 858, 296 742, 284 612
+             C 272 506, 326 412, 382 300 Z"
+          fill="url(#flameOuter)"/>
   </g>
 
-  <!-- End point (赤) -->
-  <g id="End">
-    <circle cx="728" cy="292" r="62" fill="#FFFFFF"/>
-    <circle cx="728" cy="292" r="44" fill="#FF3B30"/>
+  <!-- Inner flame (core) -->
+  <g id="FlameInner">
+    <path d="M512 440
+             C 480 520, 430 580, 432 660
+             C 434 740, 478 792, 524 792
+             C 578 792, 618 742, 614 668
+             C 610 596, 556 540, 512 440 Z"
+          fill="url(#flameInner)"/>
   </g>
 </svg>
