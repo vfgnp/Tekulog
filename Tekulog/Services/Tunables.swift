@@ -28,8 +28,12 @@ enum Tunables {
 
     // MARK: - 終了条件(移動が止まったら記録終了)
 
-    /// stationary / automotive(車・電車)が継続したら記録を自動終了するまでの時間。
-    static let stopDuration: TimeInterval = 30 * 60
+    /// stationary(休憩・立ち止まり)が継続したら記録を自動終了するまでの時間。
+    static let stopDuration: TimeInterval = 10 * 60
+
+    /// automotive(車・電車)を検知してから記録を終了するまでの猶予。
+    /// 瞬間的な誤検知で散歩記録を切らないよう即時ではなく短い猶予を置く。
+    static let vehicleStopDuration: TimeInterval = 60
 
     // MARK: - 評価間隔
 

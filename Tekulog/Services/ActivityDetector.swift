@@ -28,8 +28,12 @@ final class ActivityDetector {
     private var movingKind: ActivityKind?
     private var movingSince: Date?
 
-    /// 直近に観測した「停止相当(stationary / automotive / 不明)」が始まった時刻。
+    /// 直近に観測した「停止(stationary=休憩・立ち止まり)」が始まった時刻。
     private var stoppedSince: Date?
+
+    /// 直近に観測した「automotive(車・電車)」が始まった時刻。記録から除外するため
+    /// stationary とは別管理し、短い猶予で終了させる。
+    private var automotiveSince: Date?
 
     static var isAvailable: Bool { CMMotionActivityManager.isActivityAvailable() }
 
@@ -58,6 +62,7 @@ final class ActivityDetector {
         movingKind = nil
         movingSince = nil
         stoppedSince = nil
+        automotiveSince = nil
     }
 
     // MARK: - 内部
@@ -72,13 +77,23 @@ final class ActivityDetector {
                 movingSince = activity.startDate
             }
             stoppedSince = nil
-        } else if activity.stationary || activity.automotive {
-            // 停止 or 車・電車。記録対象外。
+            automotiveSince = nil
+        } else if activity.automotive {
+            // 車・電車。記録対象外。stationary より優先して扱い、短い猶予で終了させる。
+            if automotiveSince == nil {
+                automotiveSince = activity.startDate
+            }
+            movingKind = nil
+            movingSince = nil
+            stoppedSince = nil
+        } else if activity.stationary {
+            // 停止(休憩・立ち止まり)。
             if stoppedSince == nil {
                 stoppedSince = activity.startDate
             }
             movingKind = nil
             movingSince = nil
+            automotiveSince = nil
         }
         // unknown / 低 confidence は状態を据え置き(ノイズで状態を壊さない)。
 
@@ -94,12 +109,18 @@ final class ActivityDetector {
                 onShouldStart?(kind)
             }
         case .tracking:
-            guard let since = stoppedSince else { return }
-            if now.timeIntervalSince(since) >= Tunables.stopDuration {
-                // setMode が stoppedSince を nil クリアする前に停止時刻を退避。
-                let stoppedAt = since
+            // 車・電車は短い猶予で終了(乗り換え区間を記録しない)。stationary より先に判定。
+            if let since = automotiveSince,
+               now.timeIntervalSince(since) >= Tunables.vehicleStopDuration {
                 setMode(.idle)
-                onShouldStop?(stoppedAt)
+                onShouldStop?(since)
+                return
+            }
+            // 休憩・立ち止まりは stopDuration 経過で終了。
+            if let since = stoppedSince,
+               now.timeIntervalSince(since) >= Tunables.stopDuration {
+                setMode(.idle)
+                onShouldStop?(since)
             }
         }
     }
