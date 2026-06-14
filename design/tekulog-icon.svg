@@ -1,17 +1,9 @@
 <svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Flame glyph: Phosphor Icons "flame-fill" (MIT License, https://phosphoricons.com) -->
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1024" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#241B2F"/>
-      <stop offset="1" stop-color="#0E0B16"/>
-    </linearGradient>
-    <linearGradient id="flameOuter" x1="512" y1="120" x2="512" y2="860" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#FF2D55"/>
-      <stop offset="0.5" stop-color="#FF6A00"/>
-      <stop offset="1" stop-color="#FFA000"/>
-    </linearGradient>
-    <linearGradient id="flameInner" x1="512" y1="430" x2="512" y2="800" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#FFD23F"/>
-      <stop offset="1" stop-color="#FFF6D6"/>
+    <linearGradient id="bg" x1="0" y1="0" x2="1024" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FF9E00"/>
+      <stop offset="1" stop-color="#FF2D55"/>
     </linearGradient>
   </defs>
 
@@ -19,39 +11,8 @@
     <rect width="1024" height="1024" fill="url(#bg)"/>
   </g>
 
-  <g id="Sparks">
-    <circle cx="704" cy="232" r="15" fill="#FFB23F"/>
-    <circle cx="322" cy="248" r="12" fill="#FF7A3F"/>
-    <circle cx="566" cy="70"  r="11" fill="#FFD23F"/>
-    <circle cx="760" cy="392" r="9"  fill="#FFB23F"/>
-    <circle cx="280" cy="430" r="8"  fill="#FF7A3F"/>
-  </g>
-
-  <!-- Outer flame: 5 sharp tongues, deep valleys -->
-  <g id="FlameOuter">
-    <path d="M320 330
-             C 332 356, 352 378, 366 402
-             C 386 356, 398 268, 410 218
-             C 424 270, 448 352, 462 386
-             C 480 348, 500 208, 512 118
-             C 524 208, 546 348, 562 386
-             C 578 352, 600 280, 612 230
-             C 624 286, 644 388, 656 410
-             C 672 390, 690 368, 702 346
-             C 754 444, 772 542, 748 622
-             C 732 750, 632 862, 512 862
-             C 392 862, 292 750, 276 622
-             C 254 534, 286 430, 320 330 Z"
-          fill="url(#flameOuter)"/>
-  </g>
-
-  <!-- Inner flame core (sharp tip) -->
-  <g id="FlameInner">
-    <path d="M512 430
-             C 492 512, 434 580, 436 662
-             C 438 744, 482 796, 526 796
-             C 582 796, 622 744, 616 668
-             C 610 590, 548 528, 512 430 Z"
-          fill="url(#flameInner)"/>
+  <g id="Flame" transform="translate(186 180) scale(2.55)">
+    <path fill="#FFFFFF"
+      d="M173.79,51.48a221.25,221.25,0,0,0-41.67-34.34,8,8,0,0,0-8.24,0A221.25,221.25,0,0,0,82.21,51.48C54.59,80.48,40,112.47,40,144a88,88,0,0,0,176,0C216,112.47,201.41,80.48,173.79,51.48ZM96,184c0-27.67,22.53-47.28,32-54.3,9.48,7,32,26.63,32,54.3a32,32,0,0,1-64,0Z"/>
   </g>
 </svg>
