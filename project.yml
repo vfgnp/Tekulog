@@ -28,6 +28,7 @@ targets:
         CODE_SIGN_STYLE: Automatic
         DEVELOPMENT_TEAM: 7N355XPFBB
         TARGETED_DEVICE_FAMILY: "1" # iPhone のみ
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         SWIFT_EMIT_LOC_STRINGS: YES
         ENABLE_USER_SCRIPT_SANDBOXING: YES
     # Info.plist / entitlements は Resources/ の自作ファイルをそのまま使う
