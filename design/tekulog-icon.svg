@@ -1,0 +1,32 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0A84FF"/>
+      <stop offset="1" stop-color="#0040DD"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background (角丸・影は付けない。iOS が自動でマスクする) -->
+  <g id="Background">
+    <rect width="1024" height="1024" fill="url(#bg)"/>
+  </g>
+
+  <!-- Route (歩いた経路) -->
+  <g id="Route">
+    <path d="M300 736 C392 560 252 470 470 430 C690 390 560 300 728 292"
+          stroke="#FFFFFF" stroke-width="74"
+          stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Start point (緑) -->
+  <g id="Start">
+    <circle cx="300" cy="736" r="62" fill="#FFFFFF"/>
+    <circle cx="300" cy="736" r="44" fill="#34C759"/>
+  </g>
+
+  <!-- End point (赤) -->
+  <g id="End">
+    <circle cx="728" cy="292" r="62" fill="#FFFFFF"/>
+    <circle cx="728" cy="292" r="44" fill="#FF3B30"/>
+  </g>
+</svg>
