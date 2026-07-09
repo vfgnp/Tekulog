@@ -96,7 +96,7 @@ final class WalkRepository: @unchecked Sendable {
     }
 
     /// `endedAt` より後のルート点を削除し、残った点の総距離(m)を返す。
-    /// 停止検知(30分後)までに記録された末尾の静止点を切り落とすために使う。
+    /// 停止検知(stopDuration 経過後)までに記録された末尾の静止点を切り落とすために使う。
     @discardableResult
     func trimTrailingPoints(after endedAt: Date, in sessionID: NSManagedObjectID) async throws -> Double {
         let context = persistence.newBackgroundContext()

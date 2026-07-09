@@ -1,5 +1,15 @@
 import CoreLocation
 
+extension CLLocationManager {
+    /// バックグラウンド記録/生存のための共通設定(spec §5)。
+    /// LocationAuthorization と BackgroundWakeService で共用し、設定ドリフトを防ぐ。
+    func configureForBackgroundFitness() {
+        allowsBackgroundLocationUpdates = true
+        pausesLocationUpdatesAutomatically = false
+        activityType = .fitness
+    }
+}
+
 /// 位置情報の権限取得とステータス監視を担う。
 /// liveUpdates 自体は権限要求をしないため、CLLocationManager で要求する。
 @MainActor
@@ -13,10 +23,7 @@ final class LocationAuthorization: NSObject, ObservableObject, CLLocationManager
         status = manager.authorizationStatus
         super.init()
         manager.delegate = self
-        // バックグラウンド記録のための設定(spec §5)。
-        manager.allowsBackgroundLocationUpdates = true
-        manager.pausesLocationUpdatesAutomatically = false
-        manager.activityType = .fitness
+        manager.configureForBackgroundFitness()
     }
 
     /// 使用中許可を要求する。Always への昇格は使用中許可取得後に行う。

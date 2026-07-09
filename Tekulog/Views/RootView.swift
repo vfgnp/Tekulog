@@ -7,6 +7,7 @@ struct RootView: View {
 
     @AppStorage("didFinishOnboarding") private var didFinishOnboarding = false
     @State private var showOnboarding = false
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         TabView {
@@ -22,6 +23,13 @@ struct RootView: View {
             .tabItem { Label("設定", systemImage: "gearshape") }
         }
         .onAppear { showOnboarding = !didFinishOnboarding }
+        .onChange(of: scenePhase) { _, phase in
+            AppLog.lifecycle.notice("scenePhase → \(String(describing: phase), privacy: .public)")
+            // フォアグラウンド復帰時に suspend 中の活動履歴を遡って出す(調査用)。
+            if phase == .active, didFinishOnboarding {
+                coordinator.logMotionHistory()
+            }
+        }
         .fullScreenCover(isPresented: $showOnboarding) {
             PermissionsOnboardingView(locationAuth: locationAuth) {
                 didFinishOnboarding = true
@@ -50,10 +58,41 @@ struct RootView: View {
                     }
                 }
                 Spacer()
+                Button("停止") {
+                    coordinator.stopManually()
+                }
+                .font(.subheadline.bold())
+                .buttonStyle(.bordered)
+                .tint(.red)
             }
             .padding(.horizontal)
             .padding(.vertical, 10)
             .background(.tint.opacity(0.15))
+        } else if didFinishOnboarding {
+            HStack(spacing: 12) {
+                Image(systemName: "record.circle")
+                    .font(.title3)
+                    .foregroundStyle(.secondary)
+                Text("記録を開始")
+                    .font(.subheadline.bold())
+                Spacer()
+                Menu {
+                    ForEach(ActivityKind.allCases, id: \.self) { kind in
+                        Button {
+                            coordinator.startManually(kind: kind)
+                        } label: {
+                            Label(kind.displayName, systemImage: kind.symbolName)
+                        }
+                    }
+                } label: {
+                    Label("開始", systemImage: "play.fill")
+                        .font(.subheadline.bold())
+                }
+                .buttonStyle(.borderedProminent)
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 10)
+            .background(.thinMaterial)
         }
     }
 }

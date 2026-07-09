@@ -32,3 +32,6 @@ fastlane/screenshots/**/*.png
 
 # Misc
 *.log
+
+# ローカル専用(コミットしない)
+CLAUDE.md

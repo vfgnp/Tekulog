@@ -29,7 +29,7 @@ enum Tunables {
     // MARK: - 終了条件(移動が止まったら記録終了)
 
     /// stationary(休憩・立ち止まり)が継続したら記録を自動終了するまでの時間。
-    static let stopDuration: TimeInterval = 10 * 60
+    static let stopDuration: TimeInterval = 3 * 60
 
     /// automotive(車・電車)を検知してから記録を終了するまでの猶予。
     /// 瞬間的な誤検知で散歩記録を切らないよう即時ではなく短い猶予を置く。
@@ -39,6 +39,13 @@ enum Tunables {
 
     /// CMMotionActivity の更新が疎でもしきい時間経過を判定するための定期評価間隔。
     static let evaluationInterval: TimeInterval = 15
+
+    /// ライブ検知(ActivityDetector.evaluate)が「生きている」とみなす鮮度。
+    /// evaluate は evaluationInterval 毎に必ず動くため、これより古い =
+    /// タイマーが凍結していた = アプリが suspend されていた、と判定できる。
+    /// バックグラウンドウェイクの自動開始(sustained ゲートなしの即時再開)は
+    /// この鮮度切れのときだけ許可する。evaluationInterval の数倍を取る。
+    static let liveDetectionFreshWindow: TimeInterval = 60
 
     // MARK: - 位置取得(GPS)
 
@@ -50,6 +57,18 @@ enum Tunables {
 
     /// 明らかに飛んだ精度の点を捨てる上限(m)。
     static let maxAcceptableHorizontalAccuracy: CLLocationDistance = 50
+
+    // MARK: - アイドル中の生存(バックグラウンド常時起動)
+
+    /// アイドル中(セッション外)にアプリを生かし続けるためのロケーション精度。
+    /// ThreeKilometers はセル基地局主体の測位となり iOS がアプリを suspend してしまい、
+    /// 生存線として機能しなかった(2026-07-09 実地ログ: ロック後約20秒で凍結)。
+    /// HundredMeters は Wi-Fi 測位主体でセッションが実アクティブに保たれる。GPS チップは
+    /// 基本温めないので消費は中程度。これでも凍結するなら kCLLocationAccuracyNearestTenMeters へ。
+    static let idleKeepAliveAccuracy: CLLocationAccuracy = kCLLocationAccuracyHundredMeters
+
+    /// 生存用更新の配信間引き(点自体は使わないので粗くてよい)。生存性は配信頻度に依存しない。
+    static let idleKeepAliveDistanceFilter: CLLocationDistance = 500
 
     // MARK: - 消費エネルギー推定
 

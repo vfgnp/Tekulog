@@ -10,6 +10,10 @@ import Combine
 @MainActor
 final class SessionCoordinator: ObservableObject {
 
+    /// プロセス唯一のインスタンス。SwiftUI(`TekulogApp`)と AppDelegate(SLC による
+    /// ヘッドレス background relaunch)の両方から同じ実体に到達するために共有する。
+    static let shared = SessionCoordinator()
+
     /// 記録中の進行状況(UI 表示用)。
     struct LiveStats {
         var kind: ActivityKind
@@ -29,6 +33,7 @@ final class SessionCoordinator: ObservableObject {
     private let healthKit: HealthKitService
     private let notifications: NotificationService
     private let repository: WalkRepository
+    private let backgroundWake: BackgroundWakeService
 
     // 現在セッションの状態
     private var sessionID: NSManagedObjectID?
@@ -49,13 +54,15 @@ final class SessionCoordinator: ObservableObject {
          pedometer: PedometerService = PedometerService(),
          healthKit: HealthKitService = HealthKitService(),
          notifications: NotificationService = NotificationService(),
-         repository: WalkRepository = WalkRepository()) {
+         repository: WalkRepository = WalkRepository(),
+         backgroundWake: BackgroundWakeService = BackgroundWakeService()) {
         self.detector = detector
         self.locationTracker = locationTracker
         self.pedometer = pedometer
         self.healthKit = healthKit
         self.notifications = notifications
         self.repository = repository
+        self.backgroundWake = backgroundWake
 
         wire()
     }
@@ -65,9 +72,55 @@ final class SessionCoordinator: ObservableObject {
         notifications.configure()
     }
 
+    /// 監視が起動済みか(SwiftUI `.task` と AppDelegate 相乗りの二重起動防止)。
+    private var isMonitoring = false
+
     /// 自動検知の監視を開始する。Motion 権限プロンプトはこの時点で表示される。
     func startMonitoring() {
+        guard !isMonitoring else { return }
+        isMonitoring = true
         detector.start()
+        backgroundWake.start()
+    }
+
+    /// UI からの手動開始。種別は散歩/自転車。
+    /// (detector のモード同期は beginSession が一元管理する。手動でも stationary 自動終了が効く。)
+    func startManually(kind: ActivityKind) {
+        guard !isRecording else { return }
+        beginSession(kind: kind)
+    }
+
+    /// UI からの手動停止。
+    func stopManually() {
+        guard isRecording else { return }
+        endSession(stoppedAt: Date())
+    }
+
+    /// バックグラウンドウェイク(位置更新/SLC relaunch)時のエントリ。
+    /// これは「suspend/終了からの復帰」専用のリカバリ経路: ライブ検知が生きている間は
+    /// そちらが sustained(startDuration)ゲート付きで開始を判定するため、ここでは何も
+    /// しない。ライブ検知の evaluate が最近動いていない(=suspend されていた)場合のみ、
+    /// 履歴照会で進行中の活動を拾って即時再開する。
+    /// これがないと、生存中も30秒毎の onWake が「最後のセグメントが walking なら即開始」
+    /// で走り、sustained ゲートのすり抜け・手動停止の直後の勝手な再開が起きる。
+    func handleBackgroundWake() {
+        guard !isRecording else { return }
+        if let alive = detector.lastEvaluatedAt,
+           Date().timeIntervalSince(alive) < Tunables.liveDetectionFreshWindow {
+            // ライブ検知が健在 → 開始判定はライブ経路に委ねる。
+            return
+        }
+        AppLog.session.notice("handleBackgroundWake: ライブ検知が停止していた形跡 → 履歴照会開始")
+        detector.detectOngoingActivity { [weak self] kind in
+            guard let self, let kind, !self.isRecording else { return }
+            AppLog.session.notice("handleBackgroundWake: kind=\(kind.rawValue, privacy: .public) で自動開始")
+            self.beginSession(kind: kind)
+        }
+    }
+
+    /// 直近の活動履歴をログ出力する(調査用)。フォアグラウンド復帰時に呼ぶ。
+    func logMotionHistory() {
+        detector.logRecentHistory()
     }
 
     /// オンボーディングからの権限要求パススルー(権限はプロセス全体に効くため
@@ -98,12 +151,21 @@ final class SessionCoordinator: ObservableObject {
         notifications.onDiscardRequested = { [weak self] uuid in
             Task { try? await self?.repository.deleteSession(withID: uuid) }
         }
+        backgroundWake.onWake = { [weak self] in
+            self?.handleBackgroundWake()
+        }
     }
 
     // MARK: - セッション開始
 
     private func beginSession(kind: ActivityKind) {
-        guard sessionID == nil, currentSessionUUID == nil else { return }
+        guard sessionID == nil, currentSessionUUID == nil else {
+            AppLog.session.notice("beginSession 無視(既にセッション進行中)")
+            return
+        }
+        AppLog.session.notice("beginSession: kind=\(kind.rawValue, privacy: .public) GPS/歩数計 起動")
+        // detector モード同期はここで一元管理(自動/手動/ウェイクの全経路で不変)。
+        detector.setMode(.tracking)
         let now = Date()
         let uuid = UUID()
         currentSessionUUID = uuid
@@ -133,6 +195,7 @@ final class SessionCoordinator: ObservableObject {
                 self.flushPendingSamples()   // 生成前に溜まった点を書き出す
             } catch {
                 // 生成に失敗したら(まだ同一セッションなら)記録を畳む。
+                AppLog.session.error("beginSession: Core Data 生成失敗 \(error.localizedDescription, privacy: .public)")
                 if self.currentSessionUUID == uuid {
                     self.endSession(discard: true)
                 }
@@ -181,9 +244,15 @@ final class SessionCoordinator: ObservableObject {
 
     // MARK: - セッション終了
 
-    /// - Parameter stoppedAt: 動きが実際に止まった時刻。停止検知(約30分後)ではなくこの時刻を
-    ///   終了時刻に使い、所要時間・ペース・距離・エネルギーが末尾の静止時間で水増しされるのを防ぐ。
+    /// - Parameter stoppedAt: 動きが実際に止まった時刻。停止検知(stopDuration 経過後)ではなく
+    ///   この時刻を終了時刻に使い、所要時間・ペース・距離・エネルギーが末尾の静止時間で
+    ///   水増しされるのを防ぐ。
     private func endSession(stoppedAt: Date? = nil, discard: Bool = false) {
+        AppLog.session.notice("endSession: discard=\(discard, privacy: .public) stoppedAt=\(stoppedAt?.timeIntervalSince1970 ?? -1, privacy: .public)")
+        // detector モード同期はここで一元管理。特に discard 経路(Core Data 生成失敗)は
+        // ここ以外に setMode(.idle) の機会がなく、抜けると detector が .tracking のまま
+        // 取り残されて以後の自動開始が二度と発火しなくなる。
+        detector.setMode(.idle)
         locationTracker.stop()
         let finalSnapshot = pedometer.stop()
         flushTimer?.invalidate()
