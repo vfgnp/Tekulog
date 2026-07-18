@@ -226,7 +226,7 @@ final class ActivityDetector {
             automotiveSince = nil
             modeChangedAt = now
             lastEvaluatedAt = now
-            recoverAfterThaw()
+            recoverAfterThaw(frozenSince: last)
             return
         }
         // ライブ検知の生存証明(タイマー凍結 = suspend の検出に使う)。
@@ -264,17 +264,75 @@ final class ActivityDetector {
         }
     }
 
-    /// suspend 解凍直後のリカバリ。ライブ検知の状態は捨てた直後なので、進行中の
-    /// 散歩/自転車があれば履歴照会で拾い、sustained ゲートなしで即時再開する
-    /// (`handleBackgroundWake` と同じ思想。あちらは onWake が解凍後の evaluate より
-    /// 遅れて届くと lastEvaluatedAt が新しく見えて動かないため、解凍側でも行う)。
-    private func recoverAfterThaw() {
-        guard mode == .idle else { return }
-        detectOngoingActivity { [weak self] kind in
-            guard let self, let kind, self.mode == .idle else { return }
-            AppLog.activity.notice("recoverAfterThaw: kind=\(kind.rawValue, privacy: .public) → 即時再開")
-            self.setMode(.tracking)
-            self.onShouldStart?(kind)
+    /// suspend 解凍直後のリカバリ。ライブ検知の状態は捨てた直後なので、履歴照会で現状を拾い直す。
+    /// - idle: 進行中の散歩/自転車があれば sustained ゲートなしで即時再開する
+    ///   (`handleBackgroundWake` と同じ思想。あちらは onWake が解凍後の evaluate より
+    ///   遅れて届くと lastEvaluatedAt が新しく見えて動かないため、解凍側でも行う)。
+    /// - tracking: 凍結中に移動が終わっていれば「実際に止まった時刻」を履歴から復元して
+    ///   停止判定に載せる。CMMotionActivity の更新は状態変化時にしか届かないため、
+    ///   これがないと帰宅後スマホが置きっぱなし(=遷移が二度と来ない)のケースで
+    ///   stoppedSince が立たず、セッションが何時間も終わらない
+    ///   (2026-07-10 実地: 約10時間後にようやく停止)。
+    private func recoverAfterThaw(frozenSince: Date) {
+        switch mode {
+        case .idle:
+            detectOngoingActivity { [weak self] kind in
+                guard let self, let kind, self.mode == .idle else { return }
+                AppLog.activity.notice("recoverAfterThaw: kind=\(kind.rawValue, privacy: .public) → 即時再開")
+                self.setMode(.tracking)
+                self.onShouldStart?(kind)
+            }
+        case .tracking:
+            recoverStopStateAfterThaw(frozenSince: frozenSince)
+        }
+    }
+
+    /// tracking 中の解凍リカバリ。凍結開始(前回 lastEvaluatedAt)より少し前まで遡って
+    /// 履歴を照会し、末尾の stationary / automotive 連続区間の実際の開始時刻を
+    /// `stoppedSince` / `automotiveSince` に復元する。履歴の startDate は凍結中も正しいので
+    /// modeChangedAt でクランプしない — trailing-tail トリムに使う実停止時刻がここで決まる。
+    /// しきい時間を既に超過していれば即 onShouldStop(次の suspend までに確定させる)。
+    /// 末尾が confident な walking/cycling ならまだ移動中なので何もしない。
+    private func recoverStopStateAfterThaw(frozenSince: Date) {
+        // 凍結直前に停止が始まっていた(live の stoppedSince がリセットで消えた)場合も
+        // 拾えるよう、凍結開始より 5 分の余裕を持って遡る。
+        let minutes = max(5, Date().timeIntervalSince(frozenSince) / 60 + 5)
+        queryRecentActivities(minutes: minutes, label: "recoverStopState") { [weak self] activities in
+            guard let self, self.mode == .tracking else { return }
+            // 末尾から遡る: unknown / 低confidence は据え置き(handle と同じ)で読み飛ばし、
+            // 最初に分類できた種別(stationary or automotive)の連続区間の開始まで遡る。
+            // confident な walking/cycling に当たったらそこで打ち切り。
+            var stopStart: Date?
+            var isAutomotive = false
+            for a in activities.reversed() {
+                if ActivityKind(motionActivity: a) != nil, Self.isConfident(a) {
+                    break  // 移動セグメントに到達(末尾なら「まだ移動中」)
+                }
+                if a.automotive || a.stationary {
+                    if stopStart != nil, a.automotive != isAutomotive { break }  // 別種の区間に到達
+                    isAutomotive = a.automotive
+                    stopStart = a.startDate
+                }
+            }
+            guard let stopStart else {
+                AppLog.activity.notice("recoverStopState: 末尾は移動中(または判定不能)→ セッション継続")
+                return
+            }
+            let now = Date()
+            let elapsed = now.timeIntervalSince(stopStart)
+            let threshold = isAutomotive ? Tunables.vehicleStopDuration : Tunables.stopDuration
+            if elapsed >= threshold {
+                AppLog.activity.notice("recoverStopState: 凍結中に停止済み(\(Int(elapsed), privacy: .public)s 前から) → onShouldStop")
+                self.setMode(.idle)
+                self.onShouldStop?(stopStart)
+            } else {
+                AppLog.activity.notice("recoverStopState: 停止候補を復元 elapsed=\(Int(elapsed), privacy: .public)s(以後の evaluate が確定)")
+                if isAutomotive {
+                    self.automotiveSince = stopStart
+                } else {
+                    self.stoppedSince = stopStart
+                }
+            }
         }
     }
 

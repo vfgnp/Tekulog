@@ -67,8 +67,12 @@ enum Tunables {
     /// 基本温めないので消費は中程度。これでも凍結するなら kCLLocationAccuracyNearestTenMeters へ。
     static let idleKeepAliveAccuracy: CLLocationAccuracy = kCLLocationAccuracyHundredMeters
 
-    /// 生存用更新の配信間引き(点自体は使わないので粗くてよい)。生存性は配信頻度に依存しない。
-    static let idleKeepAliveDistanceFilter: CLLocationDistance = 500
+    /// 生存用更新の配信間引き。「生存性は配信頻度に依存しない」は誤りだった —
+    /// 500m に間引くと静止中は配信ゼロになり、更新セッションがアクティブでも
+    /// iOS はアプリを suspend する(2026-07-10 実地ログ: ロック後 ~20秒〜数分で凍結、
+    /// 目覚めは 500m 毎の配信時のみ = SLC と同等に退化)。配信そのものが生存線なので
+    /// 間引かない。精度を上げても filter が粗いままでは静止中に配信されず直らない。
+    static let idleKeepAliveDistanceFilter: CLLocationDistance = kCLDistanceFilterNone
 
     // MARK: - 消費エネルギー推定
 

@@ -224,6 +224,8 @@ final class SessionCoordinator: ObservableObject {
         guard let sessionID, !pendingSamples.isEmpty else { return }
         let batch = pendingSamples
         pendingSamples.removeAll(keepingCapacity: true)
+        // ロック中の実地検証で「GPS 配信が生きていたか」を事後ログで裏取りするための痕跡。
+        AppLog.session.debug("flush: \(batch.count, privacy: .public)点 総距離=\(Int(self.accumulatedDistance), privacy: .public)m")
         Task { [weak self] in
             do {
                 try await self?.repository.appendPoints(batch, to: sessionID)
