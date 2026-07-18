@@ -90,12 +90,14 @@ struct RingGauge: View {
         ZStack {
             Circle()
                 .stroke(TekTheme.primaryPale, lineWidth: lineWidth)
-            Circle()
-                .trim(from: 0, to: min(1, max(0.001, progress)))
-                .stroke(TekTheme.primary,
-                        style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                .rotationEffect(.degrees(-90))
-                .animation(.easeOut(duration: 0.6), value: progress)
+            if progress > 0 {
+                Circle()
+                    .trim(from: 0, to: min(1, progress))
+                    .stroke(TekTheme.primary,
+                            style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                    .rotationEffect(.degrees(-90))
+                    .animation(.easeOut(duration: 0.6), value: progress)
+            }
         }
         .frame(width: size, height: size)
     }

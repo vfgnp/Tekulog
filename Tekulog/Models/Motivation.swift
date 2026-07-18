@@ -29,6 +29,27 @@ enum Motivation {
         return base + extra
     }
 
+    /// 血めぐりスコア(0〜100)。歩数の目標達成度が主配点で、
+    /// 1日歩数に占めるランセッション歩数の比率でボーナスを上乗せする。
+    static func score(daySteps: Int, goal: Int, runningSessionSteps: Int) -> Int {
+        guard goal > 0 else { return 0 }
+        let stepPart = min(1, Double(daySteps) / Double(goal)) * Tunables.scoreStepsWeight
+        let runShare = daySteps > 0
+            ? Double(min(runningSessionSteps, daySteps)) / Double(daySteps)
+            : 0
+        let runPart = min(1, runShare / Tunables.scoreRunShareForFullBonus) * Tunables.scoreRunBonusWeight
+        return Int((stepPart + runPart).rounded())
+    }
+
+    /// スコアの評価語。
+    static func scoreLabel(_ score: Int) -> String {
+        switch score {
+        case 70...: return "好調!"
+        case 40..<70: return "まずまず"
+        default: return "これから"
+        }
+    }
+
     /// 血流量の楽しい比喩(バスタブ約200L換算)。
     static func bloodMetaphor(liters: Double) -> String {
         let bathtubs = liters / Tunables.bathtubLiters
