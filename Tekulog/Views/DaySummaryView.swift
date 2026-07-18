@@ -189,7 +189,7 @@ private struct DayTimelineRow: View {
                     Text(Formatters.distance(session.totalDistance))
                     Text("・")
                     Text(Formatters.duration(session.duration))
-                    if session.activityKind == .walking {
+                    if session.activityKind.countsSteps {
                         Text("・")
                         Text(Formatters.steps(Int(session.totalSteps)))
                     }

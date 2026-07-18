@@ -106,13 +106,14 @@ private extension ActivityKind {
     var hkActivityType: HKWorkoutActivityType {
         switch self {
         case .walking: return .walking
+        case .running: return .running
         case .cycling: return .cycling
         }
     }
 
     var hkDistanceType: HKQuantityType? {
         switch self {
-        case .walking: return HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning)
+        case .walking, .running: return HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning)
         case .cycling: return HKQuantityType.quantityType(forIdentifier: .distanceCycling)
         }
     }

@@ -9,7 +9,12 @@ enum Tunables {
     // MARK: - 開始条件(活動を継続検知したら記録開始)
 
     /// 散歩(walking)を連続検知して記録を開始するまでの時間。
-    static let walkingStartDuration: TimeInterval = 2 * 60
+    /// ※現在はテスト用に一時的に1分(本来は2分に戻す)。
+    static let walkingStartDuration: TimeInterval = 1 * 60
+
+    /// ランニング(running)を連続検知して記録を開始するまでの時間。
+    /// 走行は誤検知が少なく強度が高いので散歩より短く。
+    static let runningStartDuration: TimeInterval = 1 * 60
 
     /// 自転車(cycling)を連続検知して記録を開始するまでの時間。
     /// 自転車は短時間で距離が出るため walking より短く。
@@ -22,6 +27,7 @@ enum Tunables {
     static func startDuration(for kind: ActivityKind) -> TimeInterval {
         switch kind {
         case .walking: return walkingStartDuration
+        case .running: return runningStartDuration
         case .cycling: return cyclingStartDuration
         }
     }
@@ -83,6 +89,7 @@ enum Tunables {
     static func metValue(for kind: ActivityKind) -> Double {
         switch kind {
         case .walking: return 3.5
+        case .running: return 9.8
         case .cycling: return 6.0
         }
     }

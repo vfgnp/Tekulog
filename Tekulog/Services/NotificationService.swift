@@ -57,10 +57,8 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
 
     private func summary(kind: ActivityKind, distanceMeters: Double, steps: Int) -> String {
         let km = String(format: "%.2f km", distanceMeters / 1000)
-        switch kind {
-        case .walking: return "\(km) ・ \(steps) 歩"
-        case .cycling: return km
-        }
+        // 歩数のある種目は歩数も載せる。
+        return kind.countsSteps ? "\(km) ・ \(steps) 歩" : km
     }
 
     private func post(_ content: UNNotificationContent, id: String) {
