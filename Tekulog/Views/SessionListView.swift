@@ -40,7 +40,16 @@ struct SessionListView: View {
                                 delete(offsets, in: group.sessions)
                             }
                         } header: {
-                            Text(Formatters.day(group.day))
+                            HStack {
+                                Text(Formatters.day(group.day))
+                                Spacer()
+                                NavigationLink {
+                                    DaySummaryView(day: group.day)
+                                } label: {
+                                    Label("地図", systemImage: "map")
+                                        .font(.caption)
+                                }
+                            }
                         }
                     }
                 }
