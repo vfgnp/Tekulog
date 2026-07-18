@@ -48,4 +48,28 @@ enum Formatters {
     static func dateTime(_ date: Date) -> String {
         dateFormatter.string(from: date)
     }
+
+    private static let dayFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "ja_JP")
+        f.dateFormat = "M月d日(E)"
+        return f
+    }()
+
+    /// 日付のみ→「7月11日(金)」。日別セクション/日別まとめ用。
+    static func day(_ date: Date) -> String {
+        dayFormatter.string(from: date)
+    }
+
+    private static let timeFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "ja_JP")
+        f.dateFormat = "HH:mm"
+        return f
+    }()
+
+    /// 時刻のみ→「08:23」。タイムラインの開始–終了表示用。
+    static func time(_ date: Date) -> String {
+        timeFormatter.string(from: date)
+    }
 }

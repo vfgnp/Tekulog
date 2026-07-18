@@ -24,7 +24,7 @@ struct SessionDetailView: View {
     private var routeMap: some View {
         let coords = session.coordinates
         if coords.count >= 2 {
-            Map(initialPosition: .region(region(for: coords))) {
+            Map(initialPosition: .region(MapFitting.region(for: coords))) {
                 MapPolyline(coordinates: coords)
                     .stroke(.tint, lineWidth: 5)
                 if let start = coords.first {
@@ -60,37 +60,4 @@ struct SessionDetailView: View {
         }
     }
 
-    /// ルート全体が収まる領域を計算する。
-    private func region(for coords: [CLLocationCoordinate2D]) -> MKCoordinateRegion {
-        let lats = coords.map(\.latitude)
-        let lons = coords.map(\.longitude)
-        let minLat = lats.min() ?? 0, maxLat = lats.max() ?? 0
-        let minLon = lons.min() ?? 0, maxLon = lons.max() ?? 0
-        let center = CLLocationCoordinate2D(latitude: (minLat + maxLat) / 2,
-                                            longitude: (minLon + maxLon) / 2)
-        let span = MKCoordinateSpan(latitudeDelta: max((maxLat - minLat) * 1.4, 0.005),
-                                    longitudeDelta: max((maxLon - minLon) * 1.4, 0.005))
-        return MKCoordinateRegion(center: center, span: span)
-    }
-}
-
-private struct StatCard: View {
-    let title: String
-    let value: String
-    let symbol: String
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Label(title, systemImage: symbol)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            Text(value)
-                .font(.title3.bold())
-                .minimumScaleFactor(0.6)
-                .lineLimit(1)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
-        .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 12))
-    }
 }
