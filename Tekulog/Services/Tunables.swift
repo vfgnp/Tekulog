@@ -9,8 +9,7 @@ enum Tunables {
     // MARK: - 開始条件(活動を継続検知したら記録開始)
 
     /// 散歩(walking)を連続検知して記録を開始するまでの時間。
-    /// ※現在はテスト用に一時的に1分(本来は2分に戻す)。
-    static let walkingStartDuration: TimeInterval = 1 * 60
+    static let walkingStartDuration: TimeInterval = 2 * 60
 
     /// ランニング(running)を連続検知して記録を開始するまでの時間。
     /// 走行は誤検知が少なく強度が高いので散歩より短く。
