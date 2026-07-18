@@ -17,6 +17,16 @@
             </uniquenessConstraint>
         </uniquenessConstraints>
     </entity>
+    <entity name="DailyStat" representedClassName="DailyStat" syncable="YES" codeGenerationType="class">
+        <attribute name="day" optional="NO" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="steps" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="updatedAt" optional="NO" attributeType="Date" usesScalarValueType="NO"/>
+        <uniquenessConstraints>
+            <uniquenessConstraint>
+                <constraint value="day"/>
+            </uniquenessConstraint>
+        </uniquenessConstraints>
+    </entity>
     <entity name="RoutePoint" representedClassName="RoutePoint" syncable="YES" codeGenerationType="class">
         <attribute name="altitude" optional="NO" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="horizontalAccuracy" optional="NO" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>

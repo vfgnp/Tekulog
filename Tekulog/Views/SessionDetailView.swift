@@ -51,7 +51,7 @@ struct SessionDetailView: View {
         return LazyVGrid(columns: columns, spacing: 12) {
             StatCard(title: "距離", value: Formatters.distance(session.totalDistance), symbol: "ruler")
             StatCard(title: "時間", value: Formatters.duration(session.duration), symbol: "clock")
-            if session.activityKind == .walking {
+            if session.activityKind.countsSteps {
                 StatCard(title: "歩数", value: Formatters.steps(Int(session.totalSteps)), symbol: "shoeprints.fill")
                 StatCard(title: "ペース", value: Formatters.pace(secondsPerMeter: session.avgPace), symbol: "speedometer")
             }

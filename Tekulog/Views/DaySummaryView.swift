@@ -8,16 +8,13 @@ import CoreData
 struct DaySummaryView: View {
     private let day: Date
 
-    @EnvironmentObject private var coordinator: SessionCoordinator
     @FetchRequest private var sessions: FetchedResults<WalkSession>
+    /// 自前歩数台帳のその日ぶん(0件 or 1件)。総歩数カードの正はこちら。
+    @FetchRequest private var dayStats: FetchedResults<DailyStat>
 
     /// 選択中セッション。nil なら全体表示(.automatic が全ルートを収める)。
     @State private var selectedID: NSManagedObjectID?
     @State private var camera: MapCameraPosition = .automatic
-
-    /// ヘルスケアの1日歩数合計。セッション歩数の合計はしきい前の歩き出し・
-    /// セッション外の歩行を含まないため、総歩数はこちらを優先表示する。
-    @State private var healthKitSteps: Int?
 
     init(day: Date) {
         self.day = day
@@ -27,6 +24,10 @@ struct DaySummaryView: View {
             sortDescriptors: [NSSortDescriptor(keyPath: \WalkSession.startedAt, ascending: true)],
             predicate: NSPredicate(format: "endedAt != nil AND startedAt >= %@ AND startedAt < %@",
                                    start as NSDate, end as NSDate)
+        )
+        _dayStats = FetchRequest(
+            sortDescriptors: [],
+            predicate: NSPredicate(format: "day == %@", start as NSDate)
         )
     }
 
@@ -59,12 +60,6 @@ struct DaySummaryView: View {
         }
         .navigationTitle(Formatters.day(day))
         .navigationBarTitleDisplayMode(.inline)
-        .task {
-            // 既存インストールは歩数の読み取り権限が未確定のことがあるため毎回要求
-            // (確定済みならプロンプトは出ない)。
-            await coordinator.requestHealthKitAuthorization()
-            healthKitSteps = await coordinator.dailySteps(on: day)
-        }
     }
 
     // MARK: - 地図
@@ -123,9 +118,10 @@ struct DaySummaryView: View {
         return LazyVGrid(columns: columns, spacing: 12) {
             StatCard(title: "総距離", value: Formatters.distance(totalDistance), symbol: "ruler")
             StatCard(title: "総時間", value: Formatters.duration(totalDuration), symbol: "clock")
-            // 総歩数はヘルスケアの1日合計を正とする(取れないときはセッション合計)。
-            StatCard(title: healthKitSteps != nil ? "総歩数(ヘルスケア)" : "総歩数(記録分)",
-                     value: Formatters.steps(healthKitSteps ?? sessionSteps),
+            // 総歩数は自前台帳(24h)を正とする(台帳未整備の日はセッション合計)。
+            let ledgerSteps = dayStats.first.map { Int($0.steps) }
+            StatCard(title: ledgerSteps != nil ? "総歩数(1日)" : "総歩数(記録分)",
+                     value: Formatters.steps(ledgerSteps ?? sessionSteps),
                      symbol: "shoeprints.fill")
             StatCard(title: "総消費", value: String(format: "%.0f kcal", totalEnergy), symbol: "flame")
         }
@@ -189,7 +185,7 @@ private struct DayTimelineRow: View {
                     Text(Formatters.distance(session.totalDistance))
                     Text("・")
                     Text(Formatters.duration(session.duration))
-                    if session.activityKind == .walking {
+                    if session.activityKind.countsSteps {
                         Text("・")
                         Text(Formatters.steps(Int(session.totalSteps)))
                     }

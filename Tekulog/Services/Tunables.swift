@@ -11,6 +11,10 @@ enum Tunables {
     /// 散歩(walking)を連続検知して記録を開始するまでの時間。
     static let walkingStartDuration: TimeInterval = 2 * 60
 
+    /// ランニング(running)を連続検知して記録を開始するまでの時間。
+    /// 走行は誤検知が少なく強度が高いので散歩より短く。
+    static let runningStartDuration: TimeInterval = 1 * 60
+
     /// 自転車(cycling)を連続検知して記録を開始するまでの時間。
     /// 自転車は短時間で距離が出るため walking より短く。
     static let cyclingStartDuration: TimeInterval = 2 * 60
@@ -22,6 +26,7 @@ enum Tunables {
     static func startDuration(for kind: ActivityKind) -> TimeInterval {
         switch kind {
         case .walking: return walkingStartDuration
+        case .running: return runningStartDuration
         case .cycling: return cyclingStartDuration
         }
     }
@@ -74,6 +79,21 @@ enum Tunables {
     /// 間引かない。精度を上げても filter が粗いままでは静止中に配信されず直らない。
     static let idleKeepAliveDistanceFilter: CLLocationDistance = kCLDistanceFilterNone
 
+    // MARK: - モチベーション(てくポイント/血流)
+
+    /// 1歩あたりの基本ポイント。
+    static let pointsPerStep: Double = 1
+    /// ランニングセッション中の歩数に掛けるポイント倍率。
+    static let runningPointMultiplier: Double = 2
+    /// 歩数→活動分数の換算に使う仮定ケイデンス(歩/分)。
+    static let assumedCadenceStepsPerMinute: Double = 100
+    /// 歩行中の心拍出量(L/分)。安静時約5L/分に対する生理学的目安。
+    static let cardiacOutputWalkingLitersPerMinute: Double = 11
+    /// ランニング中の心拍出量(L/分)。
+    static let cardiacOutputRunningLitersPerMinute: Double = 16
+    /// 比喩換算に使うバスタブ1杯の容量(L)。
+    static let bathtubLiters: Double = 200
+
     // MARK: - 消費エネルギー推定
 
     /// 体重が取得できない場合のデフォルト体重(kg)。SettingsView で上書き想定。
@@ -83,6 +103,7 @@ enum Tunables {
     static func metValue(for kind: ActivityKind) -> Double {
         switch kind {
         case .walking: return 3.5
+        case .running: return 9.8
         case .cycling: return 6.0
         }
     }

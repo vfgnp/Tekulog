@@ -10,24 +10,20 @@ struct RootView: View {
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
-        TabView {
-            NavigationStack {
-                SessionListView()
-                    .safeAreaInset(edge: .top) { recordingBanner }
-            }
-            .tabItem { Label("記録", systemImage: "list.bullet") }
-
-            NavigationStack {
-                SettingsView(locationAuth: locationAuth)
-            }
-            .tabItem { Label("設定", systemImage: "gearshape") }
+        VStack(spacing: 0) {
+            // 記録中バナー/開始ボタンは全タブ共通(TabView の上に積む。
+            // safeAreaInset だと各 NavigationStack の大タイトルに重なる)。
+            recordingBanner
+            tabs
         }
         .onAppear { showOnboarding = !didFinishOnboarding }
         .onChange(of: scenePhase) { _, phase in
             AppLog.lifecycle.notice("scenePhase → \(String(describing: phase), privacy: .public)")
-            // フォアグラウンド復帰時に suspend 中の活動履歴を遡って出す(調査用)。
+            // フォアグラウンド復帰時に suspend 中の活動履歴を遡って出す(調査用)+
+            // 歩数台帳を最新化(ホームの今日歩数をすぐ正しくする)。
             if phase == .active, didFinishOnboarding {
                 coordinator.logMotionHistory()
+                coordinator.refreshStepLedger()
             }
         }
         .fullScreenCover(isPresented: $showOnboarding) {
@@ -37,6 +33,30 @@ struct RootView: View {
                 coordinator.startMonitoring()
             }
             .environmentObject(coordinator)
+        }
+    }
+
+    private var tabs: some View {
+        TabView {
+            NavigationStack {
+                HomeView(ledger: coordinator.stepLedger)
+            }
+            .tabItem { Label("ホーム", systemImage: "house") }
+
+            NavigationStack {
+                DayMapTab()
+            }
+            .tabItem { Label("地図", systemImage: "map") }
+
+            NavigationStack {
+                SessionListView()
+            }
+            .tabItem { Label("記録", systemImage: "list.bullet") }
+
+            NavigationStack {
+                SettingsView(locationAuth: locationAuth)
+            }
+            .tabItem { Label("設定", systemImage: "gearshape") }
         }
     }
 

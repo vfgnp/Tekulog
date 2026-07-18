@@ -34,6 +34,8 @@ final class SessionCoordinator: ObservableObject {
     private let notifications: NotificationService
     private let repository: WalkRepository
     private let backgroundWake: BackgroundWakeService
+    /// 24時間歩数台帳。ホーム画面が todaySteps を直接 observe するため公開。
+    let stepLedger: StepLedgerService
 
     // 現在セッションの状態
     private var sessionID: NSManagedObjectID?
@@ -55,7 +57,8 @@ final class SessionCoordinator: ObservableObject {
          healthKit: HealthKitService = HealthKitService(),
          notifications: NotificationService = NotificationService(),
          repository: WalkRepository = WalkRepository(),
-         backgroundWake: BackgroundWakeService = BackgroundWakeService()) {
+         backgroundWake: BackgroundWakeService = BackgroundWakeService(),
+         stepLedger: StepLedgerService = StepLedgerService()) {
         self.detector = detector
         self.locationTracker = locationTracker
         self.pedometer = pedometer
@@ -63,6 +66,7 @@ final class SessionCoordinator: ObservableObject {
         self.notifications = notifications
         self.repository = repository
         self.backgroundWake = backgroundWake
+        self.stepLedger = stepLedger
 
         wire()
     }
@@ -81,6 +85,12 @@ final class SessionCoordinator: ObservableObject {
         isMonitoring = true
         detector.start()
         backgroundWake.start()
+        stepLedger.refresh()
+    }
+
+    /// 歩数台帳の更新(フォアグラウンド復帰時などに UI 側から呼ぶ。内部 throttle 付き)。
+    func refreshStepLedger() {
+        stepLedger.refresh()
     }
 
     /// UI からの手動開始。種別は散歩/自転車。
@@ -133,11 +143,6 @@ final class SessionCoordinator: ObservableObject {
         try? await healthKit.requestAuthorization()
     }
 
-    /// 日別まとめ用: その日のヘルスケア歩数合計(端末内で完結)。
-    func dailySteps(on day: Date) async -> Int? {
-        await healthKit.dailySteps(on: day)
-    }
-
     // MARK: - 配線
 
     private func wire() {
@@ -157,6 +162,8 @@ final class SessionCoordinator: ObservableObject {
             Task { try? await self?.repository.deleteSession(withID: uuid) }
         }
         backgroundWake.onWake = { [weak self] in
+            // ついでに歩数台帳も更新(内部 throttle があるので安価)。
+            self?.stepLedger.refresh()
             self?.handleBackgroundWake()
         }
     }
