@@ -67,7 +67,7 @@ struct MainTabView: View {
         case .map:
             NavigationStack { DayRouteScreen() }
         case .myPage:
-            NavigationStack { SettingsView(locationAuth: locationAuth) }
+            NavigationStack { MyPageView(locationAuth: locationAuth) }
         }
     }
 

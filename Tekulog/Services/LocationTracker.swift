@@ -36,9 +36,16 @@ final class LocationTracker {
         backgroundSession = nil
     }
 
+    /// GPS 精度設定(マイページ)。高=.fitness(歩行向けベスト)/標準=.default(省電力)。
+    /// 設定は start() 時に読むので、変更は次セッションから反映される。
+    private var liveConfiguration: CLLocationUpdate.LiveConfiguration {
+        let high = UserDefaults.standard.object(forKey: TekTheme.Keys.gpsHighAccuracy) as? Bool ?? true
+        return high ? .fitness : .default
+    }
+
     private func consumeUpdates() async {
         do {
-            let updates = CLLocationUpdate.liveUpdates(.fitness)
+            let updates = CLLocationUpdate.liveUpdates(liveConfiguration)
             for try await update in updates {
                 if Task.isCancelled { break }
                 guard let location = update.location else { continue }
