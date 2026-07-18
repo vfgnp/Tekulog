@@ -24,35 +24,12 @@ final class HealthKitService {
         return types
     }
 
-    /// 共有(書き込み)権限を要求する。読み取りはサマリ表示用に最小限
-    /// (ワークアウト+日別まとめの1日歩数)。
+    /// 共有(書き込み)権限を要求する。読み取りはサマリ表示用に最小限。
+    /// (1日歩数は HealthKit ではなく自前の StepLedgerService/CMPedometer で持つ。)
     func requestAuthorization() async throws {
         guard Self.isAvailable else { return }
-        var read: Set<HKObjectType> = [HKObjectType.workoutType()]
-        if let steps = HKQuantityType.quantityType(forIdentifier: .stepCount) {
-            read.insert(steps)
-        }
+        let read: Set<HKObjectType> = [HKObjectType.workoutType()]
         try await store.requestAuthorization(toShare: shareTypes, read: read)
-    }
-
-    /// その日のヘルスケア歩数合計を返す(HK が重複統合した「ヘルスケア App と同じ値」)。
-    /// セッション歩数の合計はしきい時間前の歩き出しやセッション外の歩行を含まないため
-    /// 1日の総歩数はこちらを正とする。権限なし/データなしは nil。
-    func dailySteps(on day: Date) async -> Int? {
-        guard Self.isAvailable,
-              let type = HKQuantityType.quantityType(forIdentifier: .stepCount) else { return nil }
-        let start = Calendar.current.startOfDay(for: day)
-        guard let end = Calendar.current.date(byAdding: .day, value: 1, to: start) else { return nil }
-        let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: .strictStartDate)
-        return await withCheckedContinuation { continuation in
-            let query = HKStatisticsQuery(quantityType: type,
-                                          quantitySamplePredicate: predicate,
-                                          options: .cumulativeSum) { _, statistics, _ in
-                let sum = statistics?.sumQuantity()?.doubleValue(for: .count())
-                continuation.resume(returning: sum.map { Int($0) })
-            }
-            store.execute(query)
-        }
     }
 
     /// 完了したセッションをワークアウトとして保存し、その UUID を返す。

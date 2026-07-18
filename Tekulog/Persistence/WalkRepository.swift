@@ -149,6 +149,25 @@ final class WalkRepository: @unchecked Sendable {
         }
     }
 
+    /// 日別歩数台帳を upsert する。`day` は startOfDay 前提(uniqueness 制約のキー)。
+    /// CMPedometer の7日照会結果を StepLedgerService が定期的に書き込む。
+    func upsertDailySteps(day: Date, steps: Int) async throws {
+        let context = persistence.newBackgroundContext()
+        try await context.perform {
+            let request = DailyStat.fetchRequest()
+            request.predicate = NSPredicate(format: "day == %@", day as NSDate)
+            request.fetchLimit = 1
+            let stat = try context.fetch(request).first ?? {
+                let new = DailyStat(context: context)
+                new.day = day
+                return new
+            }()
+            stat.steps = Int64(steps)
+            stat.updatedAt = Date()
+            try context.save()
+        }
+    }
+
     /// セッションを UUID で削除する。通知の「破棄」アクションから呼ぶ。
     func deleteSession(withID id: UUID) async throws {
         let context = persistence.newBackgroundContext()

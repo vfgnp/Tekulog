@@ -25,9 +25,11 @@ struct RootView: View {
         .onAppear { showOnboarding = !didFinishOnboarding }
         .onChange(of: scenePhase) { _, phase in
             AppLog.lifecycle.notice("scenePhase → \(String(describing: phase), privacy: .public)")
-            // フォアグラウンド復帰時に suspend 中の活動履歴を遡って出す(調査用)。
+            // フォアグラウンド復帰時に suspend 中の活動履歴を遡って出す(調査用)+
+            // 歩数台帳を最新化(ホームの今日歩数をすぐ正しくする)。
             if phase == .active, didFinishOnboarding {
                 coordinator.logMotionHistory()
+                coordinator.refreshStepLedger()
             }
         }
         .fullScreenCover(isPresented: $showOnboarding) {
