@@ -70,7 +70,7 @@ struct CalendarView: View {
         .scrollContentBackground(.hidden)
         .background(TekTheme.background)
         .toolbar(.hidden, for: .navigationBar)
-        .navigationDestination(item: $navDay) { DaySummaryView(day: $0.date) }
+        .navigationDestination(item: $navDay) { DayRouteScreen(initialDay: $0.date) }
         .navigationDestination(item: $navSession) { SessionDetailView(session: $0.session) }
     }
 
