@@ -18,7 +18,9 @@ struct MainTabView: View {
         self.locationAuth = locationAuth
         #if DEBUG
         // スクショ検証用: `-initialTab N` 起動引数で初期タブを選べる(DEBUG限定)。
-        if let index = UserDefaults.standard.object(forKey: "initialTab") as? Int,
+        // 引数ドメインは値を文字列で持つことがあるので Int/String 双方を許容する。
+        let raw = UserDefaults.standard.object(forKey: "initialTab")
+        if let index = (raw as? Int) ?? (raw as? String).flatMap({ Int($0) }),
            let initial = Tab(rawValue: index) {
             _tab = State(initialValue: initial)
         }
@@ -53,7 +55,7 @@ struct MainTabView: View {
         case .home:
             NavigationStack { HomeView(ledger: coordinator.stepLedger) }
         case .calendar:
-            NavigationStack { SessionListView() }
+            NavigationStack { CalendarView() }
         case .map:
             NavigationStack { DayMapTab() }
         case .myPage:
