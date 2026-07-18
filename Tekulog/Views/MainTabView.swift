@@ -12,7 +12,7 @@ struct MainTabView: View {
 
     @State private var tab: Tab = .home
     @State private var showKindDialog = false
-    @State private var showStopDialog = false
+    @State private var showLive = false
 
     init(locationAuth: LocationAuthorization) {
         self.locationAuth = locationAuth
@@ -38,15 +38,23 @@ struct MainTabView: View {
             ForEach(ActivityKind.allCases, id: \.self) { kind in
                 Button(kind.displayName) {
                     coordinator.startManually(kind: kind)
+                    showLive = true
                 }
             }
         }
-        .confirmationDialog("記録中", isPresented: $showStopDialog, titleVisibility: .visible) {
-            Button("終了して保存", role: .destructive) {
-                coordinator.stopManually()
-            }
-            Button("記録を続ける", role: .cancel) {}
+        .fullScreenCover(isPresented: $showLive) {
+            LiveRecordingView()
+                .environmentObject(coordinator)
         }
+        #if DEBUG
+        // スクショ検証用: `-liveDemo 1` で散歩セッションを開始し記録中画面を表示。
+        .onAppear {
+            if UserDefaults.standard.object(forKey: "liveDemo") != nil, !coordinator.isRecording {
+                coordinator.startManually(kind: .walking)
+                showLive = true
+            }
+        }
+        #endif
     }
 
     @ViewBuilder
@@ -105,7 +113,7 @@ struct MainTabView: View {
         let recording = coordinator.isRecording
         return Button {
             if recording {
-                showStopDialog = true
+                showLive = true
             } else {
                 showKindDialog = true
             }

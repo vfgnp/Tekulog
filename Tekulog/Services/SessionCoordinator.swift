@@ -20,7 +20,12 @@ final class SessionCoordinator: ObservableObject {
         var startedAt: Date
         var distanceMeters: Double = 0
         var steps: Int = 0
+        /// 進行中ルート(記録中画面のポリライン用、インメモリ)。上限で先頭を間引く。
+        var coordinates: [CLLocationCoordinate2D] = []
     }
+
+    /// 記録中画面のポリラインが際限なく伸びないための上限点数。
+    private let liveCoordinateCap = 5000
 
     @Published private(set) var live: LiveStats?
 
@@ -239,6 +244,10 @@ final class SessionCoordinator: ObservableObject {
         }
         lastLocation = location
         live?.distanceMeters = accumulatedDistance
+        live?.coordinates.append(location.coordinate)
+        if let count = live?.coordinates.count, count > liveCoordinateCap {
+            live?.coordinates.removeFirst(count - liveCoordinateCap)
+        }
 
         pendingSamples.append(sample)
         if pendingSamples.count >= Tunables.pointFlushBatchSize {
