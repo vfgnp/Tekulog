@@ -114,7 +114,7 @@ final class SessionCoordinator: ObservableObject {
     /// これがないと、生存中も30秒毎の onWake が「最後のセグメントが walking なら即開始」
     /// で走り、sustained ゲートのすり抜け・手動停止の直後の勝手な再開が起きる。
     func handleBackgroundWake() {
-        guard !isRecording else { return }
+        guard !isRecording, isAutoRecordEnabled else { return }
         if let alive = detector.lastEvaluatedAt,
            Date().timeIntervalSince(alive) < Tunables.liveDetectionFreshWindow {
             // ライブ検知が健在 → 開始判定はライブ経路に委ねる。
@@ -145,9 +145,23 @@ final class SessionCoordinator: ObservableObject {
 
     // MARK: - 配線
 
+    /// 自動記録のON/OFF(マイページ設定)。未設定は ON。
+    private var isAutoRecordEnabled: Bool {
+        UserDefaults.standard.object(forKey: TekTheme.Keys.autoRecordEnabled) as? Bool ?? true
+    }
+
     private func wire() {
         detector.onShouldStart = { [weak self] kind in
-            self?.beginSession(kind: kind)
+            guard let self else { return }
+            guard self.isAutoRecordEnabled else {
+                // 開始を握り潰したので検知を再武装する。detector は onShouldStart の直前に
+                // .tracking へ遷移済みのため、ここで戻さないと自動検知が二度と発火しない
+                // (「モード同期は beginSession/endSession が一元管理」の唯一の例外)。
+                AppLog.session.notice("自動開始を無視(自動記録OFF設定)")
+                self.detector.setMode(.idle)
+                return
+            }
+            self.beginSession(kind: kind)
         }
         detector.onShouldStop = { [weak self] stoppedAt in
             self?.endSession(stoppedAt: stoppedAt)
