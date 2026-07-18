@@ -133,6 +133,11 @@ final class SessionCoordinator: ObservableObject {
         try? await healthKit.requestAuthorization()
     }
 
+    /// 日別まとめ用: その日のヘルスケア歩数合計(端末内で完結)。
+    func dailySteps(on day: Date) async -> Int? {
+        await healthKit.dailySteps(on: day)
+    }
+
     // MARK: - 配線
 
     private func wire() {

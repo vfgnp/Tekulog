@@ -8,11 +8,16 @@ import CoreData
 struct DaySummaryView: View {
     private let day: Date
 
+    @EnvironmentObject private var coordinator: SessionCoordinator
     @FetchRequest private var sessions: FetchedResults<WalkSession>
 
     /// 選択中セッション。nil なら全体表示(.automatic が全ルートを収める)。
     @State private var selectedID: NSManagedObjectID?
     @State private var camera: MapCameraPosition = .automatic
+
+    /// ヘルスケアの1日歩数合計。セッション歩数の合計はしきい前の歩き出し・
+    /// セッション外の歩行を含まないため、総歩数はこちらを優先表示する。
+    @State private var healthKitSteps: Int?
 
     init(day: Date) {
         self.day = day
@@ -54,6 +59,12 @@ struct DaySummaryView: View {
         }
         .navigationTitle(Formatters.day(day))
         .navigationBarTitleDisplayMode(.inline)
+        .task {
+            // 既存インストールは歩数の読み取り権限が未確定のことがあるため毎回要求
+            // (確定済みならプロンプトは出ない)。
+            await coordinator.requestHealthKitAuthorization()
+            healthKitSteps = await coordinator.dailySteps(on: day)
+        }
     }
 
     // MARK: - 地図
@@ -106,13 +117,16 @@ struct DaySummaryView: View {
     private var totalsGrid: some View {
         let totalDistance = sessions.reduce(0) { $0 + $1.totalDistance }
         let totalDuration = sessions.reduce(0) { $0 + $1.duration }
-        let totalSteps = sessions.reduce(0) { $0 + Int($1.totalSteps) }
+        let sessionSteps = sessions.reduce(0) { $0 + Int($1.totalSteps) }
         let totalEnergy = sessions.reduce(0) { $0 + $1.energyBurned }
         let columns = [GridItem(.flexible()), GridItem(.flexible())]
         return LazyVGrid(columns: columns, spacing: 12) {
             StatCard(title: "総距離", value: Formatters.distance(totalDistance), symbol: "ruler")
             StatCard(title: "総時間", value: Formatters.duration(totalDuration), symbol: "clock")
-            StatCard(title: "総歩数", value: Formatters.steps(totalSteps), symbol: "shoeprints.fill")
+            // 総歩数はヘルスケアの1日合計を正とする(取れないときはセッション合計)。
+            StatCard(title: healthKitSteps != nil ? "総歩数(ヘルスケア)" : "総歩数(記録分)",
+                     value: Formatters.steps(healthKitSteps ?? sessionSteps),
+                     symbol: "shoeprints.fill")
             StatCard(title: "総消費", value: String(format: "%.0f kcal", totalEnergy), symbol: "flame")
         }
     }
