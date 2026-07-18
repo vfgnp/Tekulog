@@ -12,20 +12,46 @@ struct SessionListView: View {
     )
     private var sessions: FetchedResults<WalkSession>
 
+    /// 日別(startOfDay)のセクション。新しい日が先頭。日内は fetch の降順のまま。
+    private var dayGroups: [(day: Date, sessions: [WalkSession])] {
+        Dictionary(grouping: sessions) { session in
+            Calendar.current.startOfDay(for: session.startedAt ?? .distantPast)
+        }
+        .sorted { $0.key > $1.key }
+        .map { (day: $0.key, sessions: $0.value) }
+    }
+
     var body: some View {
         Group {
             if sessions.isEmpty {
                 emptyState
             } else {
                 List {
-                    ForEach(sessions) { session in
-                        NavigationLink {
-                            SessionDetailView(session: session)
-                        } label: {
-                            SessionRow(session: session)
+                    ForEach(dayGroups, id: \.day) { group in
+                        Section {
+                            ForEach(group.sessions) { session in
+                                NavigationLink {
+                                    SessionDetailView(session: session)
+                                } label: {
+                                    SessionRow(session: session)
+                                }
+                            }
+                            .onDelete { offsets in
+                                delete(offsets, in: group.sessions)
+                            }
+                        } header: {
+                            HStack {
+                                Text(Formatters.day(group.day))
+                                Spacer()
+                                NavigationLink {
+                                    DaySummaryView(day: group.day)
+                                } label: {
+                                    Label("地図", systemImage: "map")
+                                        .font(.caption)
+                                }
+                            }
                         }
                     }
-                    .onDelete(perform: delete)
                 }
             }
         }
@@ -40,7 +66,7 @@ struct SessionListView: View {
         )
     }
 
-    private func delete(_ offsets: IndexSet) {
+    private func delete(_ offsets: IndexSet, in sessions: [WalkSession]) {
         for index in offsets {
             context.delete(sessions[index])
         }
