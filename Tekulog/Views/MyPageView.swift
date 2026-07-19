@@ -181,12 +181,14 @@ struct MyPageView: View {
                     chevron
                 }
             }
-            .overlay { Button("") { openSettings() }.opacity(0.001) }
+            .contentShape(Rectangle())
+            .onTapGesture { openSettings() }
 
             TekSettingRow(iconBackground: Color(hex: 0xEAECEA), label: "通知") {
                 chevron
             }
-            .overlay { Button("") { openSettings() }.opacity(0.001) }
+            .contentShape(Rectangle())
+            .onTapGesture { openSettings() }
 
             NavigationLink {
                 AboutView()
