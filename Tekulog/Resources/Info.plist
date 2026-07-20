@@ -22,6 +22,10 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<!-- 輸出コンプライアンス: HTTPS 等の標準的な暗号のみ(独自暗号なし)。
+	     これで App Store Connect 提出時の暗号化質問をスキップできる。 -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>UILaunchScreen</key>
 	<dict/>
 	<key>UIApplicationSceneManifest</key>
