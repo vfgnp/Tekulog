@@ -30,6 +30,14 @@ final class StepLedgerService: ObservableObject {
         self.repository = repository
     }
 
+    #if DEBUG
+    /// スクショ用デモデータ(DemoDataSeeder)から今日の歩数を直接与える。
+    /// シミュレータは CMPedometer が無く refresh() が no-op なので上書きされない。
+    func setDemoTodaySteps(_ steps: Int) {
+        todaySteps = steps
+    }
+    #endif
+
     /// 台帳を更新する。呼び出し側は好きなだけ呼んでよい(内部 throttle が効く)。
     func refresh() {
         guard CMPedometer.isStepCountingAvailable() else { return }

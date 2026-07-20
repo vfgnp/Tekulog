@@ -31,6 +31,10 @@ struct TekulogApp: App {
         // 通知カテゴリ/デリゲートを起動直後に設定(破棄アクションのため)。
         // StateObject はまだ参照できないため一時インスタンスは使わず、
         // bootstrap は onAppear 相当の .task で行う。
+        #if DEBUG
+        // スクショ用: `-demoData 1` でデモデータを同期投入(ビュー構築前に済ませる)。
+        DemoDataSeeder.seedIfRequested()
+        #endif
     }
 
     var body: some Scene {
