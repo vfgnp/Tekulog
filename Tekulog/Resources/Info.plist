@@ -50,11 +50,12 @@
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>記録した散歩・自転車をワークアウトとしてヘルスケアに保存します。</string>
 
-	<!-- バックグラウンド記録(spec §5) -->
+	<!-- バックグラウンド記録(spec §5)。
+	     processing は BGTaskScheduler 未使用のため入れない(入れると
+	     BGTaskSchedulerPermittedIdentifiers 必須になり App Store 検証で弾かれる)。 -->
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>location</string>
-		<string>processing</string>
 	</array>
 	<!-- ストア時の Data Protection は Core Data の
 	     NSPersistentStoreFileProtectionKey で設定(PersistenceController)。 -->

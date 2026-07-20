@@ -34,3 +34,14 @@ targets:
     # Info.plist / entitlements は Resources/ の自作ファイルをそのまま使う
     # (info:/entitlements: ブロックは使わない=XcodeGen に上書きさせない)。
     # フレームワークは import で自動リンク(Core Motion / Core Location / HealthKit / MapKit)。
+
+# Xcode Cloud はリポジトリ内の共有スキームを必要とするため明示的に生成する。
+schemes:
+  Tekulog:
+    build:
+      targets:
+        Tekulog: all
+    run:
+      config: Debug
+    archive:
+      config: Release

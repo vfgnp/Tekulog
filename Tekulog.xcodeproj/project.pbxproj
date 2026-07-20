@@ -1,0 +1,532 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0AA14A1C740A572BCA39D2B7 /* SessionDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 240536452F99B7171CE101B4 /* SessionDetailView.swift */; };
+		29C4568B0CA8476CA2511946 /* TekulogApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472121AB328F52F4603DD756 /* TekulogApp.swift */; };
+		2AFF542E2E122681F728B5A7 /* PersistenceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 602777194E17D0DF8D288A6A /* PersistenceController.swift */; };
+		2F02326A3A92036007ABD27B /* MyPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 099FCA9752894B5918EBD327 /* MyPageView.swift */; };
+		2F89D15CB122F3A7E29BABEB /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 625F6739CF9775F4B90ACD33 /* CalendarView.swift */; };
+		33424C43B32FA153BE529A67 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BE58EC54CC5380654BA2AFF /* HomeView.swift */; };
+		33FE57F7A63B391D3C3EAECA /* Formatters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64834264FAC33FB8A08E29E6 /* Formatters.swift */; };
+		36FAB05BC3B1B1ED4BE86ACE /* WalkSession+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EB620DCF95DAA2708E3D918 /* WalkSession+Extensions.swift */; };
+		3EF4861D67A364D088A60EF0 /* HealthKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE14925F7896F6EB4237EBED /* HealthKitService.swift */; };
+		43BD9CBEE36BD94434CD57BB /* Tunables.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1880F6B509E2C01598B1ABB4 /* Tunables.swift */; };
+		50BB61BFF7FD952A673A8D39 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B87EBE2ADFDA635B68DD84F9 /* MainTabView.swift */; };
+		5627831071F0E59141704A13 /* LocationAuthorization.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50BD59B83685DC876ED7D59 /* LocationAuthorization.swift */; };
+		5F173314DE3A16B310A3A982 /* StepLedgerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DD29E43F9B8D699479B55B4 /* StepLedgerService.swift */; };
+		65408FB44DA4B1D005153DD9 /* TekTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EA33929EC5D382ABBF993CC /* TekTheme.swift */; };
+		6C0BDCCF9D2180CCC2DF98C7 /* Tekulog.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = D9B900272432B3F0F2B607FB /* Tekulog.xcdatamodeld */; };
+		792BA0F6B0888041AD4F28DD /* DayRouteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B93BF74D3002F281D884D7A1 /* DayRouteView.swift */; };
+		884F5600A62E7F5C388450C4 /* PlaceLookupService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F55D31921B0B71A8E8AEC26 /* PlaceLookupService.swift */; };
+		89FF6E962F6483E5EC6E5F93 /* ActivityKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = 661A1C10F6C556F40FE7C1F2 /* ActivityKind.swift */; };
+		8F545934951B380CF5CFB3F9 /* AchievementsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F258603B31C07091FF00635 /* AchievementsView.swift */; };
+		90187EACBE163B71246931A6 /* TekComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 876CF89A3C6793A55960190D /* TekComponents.swift */; };
+		94343B5F76A87C258F65CDCE /* DemoDataSeeder.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB03A09E9F8BAE8F7E1C4E4F /* DemoDataSeeder.swift */; };
+		A2840146135A4E7D0D5B953E /* AppLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3090752CB2CF089C2241C5BC /* AppLog.swift */; };
+		A3438EBDE97DBEA615C9F590 /* BackgroundWakeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B09B8D474C557FF34937E28 /* BackgroundWakeService.swift */; };
+		A90647F69A5E2ED147F28417 /* MapFitting.swift in Sources */ = {isa = PBXBuildFile; fileRef = F75BEF003252F07AA818B49A /* MapFitting.swift */; };
+		B6952EF3DE05ACD3A87440B3 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8E96CAE35614467E1BD1EFE /* NotificationService.swift */; };
+		BA7340510FF2B113C9002799 /* SessionCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CD63DD4EA7FECA3731A0AF6 /* SessionCoordinator.swift */; };
+		BB75E9539AB92E2CAD2B127E /* LiveRecordingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E7D5FB690154DD972FF443 /* LiveRecordingView.swift */; };
+		BC7ADA8DB84EB579DF67473F /* WalkRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CC9C49A84CCF6B40AD0848A /* WalkRepository.swift */; };
+		C9E839A8BB3689BBEC870C03 /* LocationTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F29CC06A07665ABBEE574E1 /* LocationTracker.swift */; };
+		D03237E09FDBEF17CECE568E /* PedometerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59C4178A7AE5E9686B64114A /* PedometerService.swift */; };
+		D34052E569EF00908AEF58E3 /* PermissionsOnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE9E9C91F2A4984FCF635F1B /* PermissionsOnboardingView.swift */; };
+		DC868ACF7AA6DC87A40CB1CA /* StatCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 931B19C709E3ED1850EEFC35 /* StatCard.swift */; };
+		E66D868CFD249042E7020E44 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 919B7F109BBE89E548877915 /* RootView.swift */; };
+		E6A7E70E8325F3E8395D346C /* Motivation.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECFCF8906992FF3B58D523A4 /* Motivation.swift */; };
+		EC47EE865171A2D3D1E53651 /* Achievements.swift in Sources */ = {isa = PBXBuildFile; fileRef = A36A7107EDA87D3CB0749207 /* Achievements.swift */; };
+		F8142182C0207A2D21E3ABC0 /* ActivityDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27D7E352E46A2D01E398BC14 /* ActivityDetector.swift */; };
+		FE32A5B739AA8F7120542A99 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5036AD09F345B18DD87A8118 /* Assets.xcassets */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		099FCA9752894B5918EBD327 /* MyPageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyPageView.swift; sourceTree = "<group>"; };
+		1880F6B509E2C01598B1ABB4 /* Tunables.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tunables.swift; sourceTree = "<group>"; };
+		240536452F99B7171CE101B4 /* SessionDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionDetailView.swift; sourceTree = "<group>"; };
+		27D7E352E46A2D01E398BC14 /* ActivityDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityDetector.swift; sourceTree = "<group>"; };
+		2928CDA981B17AD99E4D77B8 /* Tekulog.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Tekulog.entitlements; sourceTree = "<group>"; };
+		2BE58EC54CC5380654BA2AFF /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		2EA33929EC5D382ABBF993CC /* TekTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TekTheme.swift; sourceTree = "<group>"; };
+		3090752CB2CF089C2241C5BC /* AppLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLog.swift; sourceTree = "<group>"; };
+		37E7D5FB690154DD972FF443 /* LiveRecordingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveRecordingView.swift; sourceTree = "<group>"; };
+		3EB620DCF95DAA2708E3D918 /* WalkSession+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WalkSession+Extensions.swift"; sourceTree = "<group>"; };
+		3F55D31921B0B71A8E8AEC26 /* PlaceLookupService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceLookupService.swift; sourceTree = "<group>"; };
+		472121AB328F52F4603DD756 /* TekulogApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TekulogApp.swift; sourceTree = "<group>"; };
+		475B7F8EBB6AA4D13ABBB1B6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		47E499EA56DE62D3DA46E428 /* Tekulog.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Tekulog.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4DD29E43F9B8D699479B55B4 /* StepLedgerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepLedgerService.swift; sourceTree = "<group>"; };
+		4F29CC06A07665ABBEE574E1 /* LocationTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationTracker.swift; sourceTree = "<group>"; };
+		5036AD09F345B18DD87A8118 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		59C4178A7AE5E9686B64114A /* PedometerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PedometerService.swift; sourceTree = "<group>"; };
+		5CD63DD4EA7FECA3731A0AF6 /* SessionCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionCoordinator.swift; sourceTree = "<group>"; };
+		602777194E17D0DF8D288A6A /* PersistenceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceController.swift; sourceTree = "<group>"; };
+		625F6739CF9775F4B90ACD33 /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
+		64834264FAC33FB8A08E29E6 /* Formatters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formatters.swift; sourceTree = "<group>"; };
+		661A1C10F6C556F40FE7C1F2 /* ActivityKind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityKind.swift; sourceTree = "<group>"; };
+		6B09B8D474C557FF34937E28 /* BackgroundWakeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundWakeService.swift; sourceTree = "<group>"; };
+		6CC9C49A84CCF6B40AD0848A /* WalkRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalkRepository.swift; sourceTree = "<group>"; };
+		876CF89A3C6793A55960190D /* TekComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TekComponents.swift; sourceTree = "<group>"; };
+		8F258603B31C07091FF00635 /* AchievementsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementsView.swift; sourceTree = "<group>"; };
+		919B7F109BBE89E548877915 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		931B19C709E3ED1850EEFC35 /* StatCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatCard.swift; sourceTree = "<group>"; };
+		A36A7107EDA87D3CB0749207 /* Achievements.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Achievements.swift; sourceTree = "<group>"; };
+		A8E96CAE35614467E1BD1EFE /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
+		AE14925F7896F6EB4237EBED /* HealthKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitService.swift; sourceTree = "<group>"; };
+		B87EBE2ADFDA635B68DD84F9 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
+		B93BF74D3002F281D884D7A1 /* DayRouteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayRouteView.swift; sourceTree = "<group>"; };
+		BE9E9C91F2A4984FCF635F1B /* PermissionsOnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionsOnboardingView.swift; sourceTree = "<group>"; };
+		D7879C429EA9F2C9AFD6BB82 /* Tekulog.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Tekulog.xcdatamodel; sourceTree = "<group>"; };
+		DB03A09E9F8BAE8F7E1C4E4F /* DemoDataSeeder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoDataSeeder.swift; sourceTree = "<group>"; };
+		ECFCF8906992FF3B58D523A4 /* Motivation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Motivation.swift; sourceTree = "<group>"; };
+		F50BD59B83685DC876ED7D59 /* LocationAuthorization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationAuthorization.swift; sourceTree = "<group>"; };
+		F75BEF003252F07AA818B49A /* MapFitting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapFitting.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		00355BE08703677CE661F63C /* App */ = {
+			isa = PBXGroup;
+			children = (
+				472121AB328F52F4603DD756 /* TekulogApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		173DB8F4C5B51A360A5AD40C /* Tekulog */ = {
+			isa = PBXGroup;
+			children = (
+				00355BE08703677CE661F63C /* App */,
+				4D233DA73596777F968B718B /* Models */,
+				7A3D149016B412CB7B3AAEC4 /* Persistence */,
+				C2C34C86F3B5C846F8BA4AE7 /* Resources */,
+				E8DF3230892B04A50B7702A2 /* Services */,
+				8C1DFDDDFBCCCE28321B6027 /* Views */,
+			);
+			path = Tekulog;
+			sourceTree = "<group>";
+		};
+		4D233DA73596777F968B718B /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				A36A7107EDA87D3CB0749207 /* Achievements.swift */,
+				661A1C10F6C556F40FE7C1F2 /* ActivityKind.swift */,
+				ECFCF8906992FF3B58D523A4 /* Motivation.swift */,
+				3EB620DCF95DAA2708E3D918 /* WalkSession+Extensions.swift */,
+				D9B900272432B3F0F2B607FB /* Tekulog.xcdatamodeld */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		7A3D149016B412CB7B3AAEC4 /* Persistence */ = {
+			isa = PBXGroup;
+			children = (
+				602777194E17D0DF8D288A6A /* PersistenceController.swift */,
+				6CC9C49A84CCF6B40AD0848A /* WalkRepository.swift */,
+			);
+			path = Persistence;
+			sourceTree = "<group>";
+		};
+		8C1DFDDDFBCCCE28321B6027 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				8F258603B31C07091FF00635 /* AchievementsView.swift */,
+				625F6739CF9775F4B90ACD33 /* CalendarView.swift */,
+				B93BF74D3002F281D884D7A1 /* DayRouteView.swift */,
+				64834264FAC33FB8A08E29E6 /* Formatters.swift */,
+				2BE58EC54CC5380654BA2AFF /* HomeView.swift */,
+				37E7D5FB690154DD972FF443 /* LiveRecordingView.swift */,
+				B87EBE2ADFDA635B68DD84F9 /* MainTabView.swift */,
+				F75BEF003252F07AA818B49A /* MapFitting.swift */,
+				099FCA9752894B5918EBD327 /* MyPageView.swift */,
+				BE9E9C91F2A4984FCF635F1B /* PermissionsOnboardingView.swift */,
+				919B7F109BBE89E548877915 /* RootView.swift */,
+				240536452F99B7171CE101B4 /* SessionDetailView.swift */,
+				931B19C709E3ED1850EEFC35 /* StatCard.swift */,
+				BCCF0B39A881AA5EA5057437 /* Theme */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		99965DEF347373687EC8E966 = {
+			isa = PBXGroup;
+			children = (
+				173DB8F4C5B51A360A5AD40C /* Tekulog */,
+				DA51C7B8F88C28340B707355 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		BCCF0B39A881AA5EA5057437 /* Theme */ = {
+			isa = PBXGroup;
+			children = (
+				876CF89A3C6793A55960190D /* TekComponents.swift */,
+				2EA33929EC5D382ABBF993CC /* TekTheme.swift */,
+			);
+			path = Theme;
+			sourceTree = "<group>";
+		};
+		C2C34C86F3B5C846F8BA4AE7 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				5036AD09F345B18DD87A8118 /* Assets.xcassets */,
+				475B7F8EBB6AA4D13ABBB1B6 /* Info.plist */,
+				2928CDA981B17AD99E4D77B8 /* Tekulog.entitlements */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		DA51C7B8F88C28340B707355 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				47E499EA56DE62D3DA46E428 /* Tekulog.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		E8DF3230892B04A50B7702A2 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				27D7E352E46A2D01E398BC14 /* ActivityDetector.swift */,
+				3090752CB2CF089C2241C5BC /* AppLog.swift */,
+				6B09B8D474C557FF34937E28 /* BackgroundWakeService.swift */,
+				DB03A09E9F8BAE8F7E1C4E4F /* DemoDataSeeder.swift */,
+				AE14925F7896F6EB4237EBED /* HealthKitService.swift */,
+				F50BD59B83685DC876ED7D59 /* LocationAuthorization.swift */,
+				4F29CC06A07665ABBEE574E1 /* LocationTracker.swift */,
+				A8E96CAE35614467E1BD1EFE /* NotificationService.swift */,
+				59C4178A7AE5E9686B64114A /* PedometerService.swift */,
+				3F55D31921B0B71A8E8AEC26 /* PlaceLookupService.swift */,
+				5CD63DD4EA7FECA3731A0AF6 /* SessionCoordinator.swift */,
+				4DD29E43F9B8D699479B55B4 /* StepLedgerService.swift */,
+				1880F6B509E2C01598B1ABB4 /* Tunables.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		C5BDED6D9FD2546E59483FD5 /* Tekulog */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3126F78D825A08EB3C2F8550 /* Build configuration list for PBXNativeTarget "Tekulog" */;
+			buildPhases = (
+				1DBC394183C275AE40BD26D8 /* Sources */,
+				26B02F37695C3C915B45E48D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Tekulog;
+			packageProductDependencies = (
+			);
+			productName = Tekulog;
+			productReference = 47E499EA56DE62D3DA46E428 /* Tekulog.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		91BB0CD2F1AF3306F1C843F8 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					C5BDED6D9FD2546E59483FD5 = {
+						DevelopmentTeam = 7N355XPFBB;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 72C562424E86D57785F905E2 /* Build configuration list for PBXProject "Tekulog" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 99965DEF347373687EC8E966;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = DA51C7B8F88C28340B707355 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				C5BDED6D9FD2546E59483FD5 /* Tekulog */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		26B02F37695C3C915B45E48D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FE32A5B739AA8F7120542A99 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		1DBC394183C275AE40BD26D8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EC47EE865171A2D3D1E53651 /* Achievements.swift in Sources */,
+				8F545934951B380CF5CFB3F9 /* AchievementsView.swift in Sources */,
+				F8142182C0207A2D21E3ABC0 /* ActivityDetector.swift in Sources */,
+				89FF6E962F6483E5EC6E5F93 /* ActivityKind.swift in Sources */,
+				A2840146135A4E7D0D5B953E /* AppLog.swift in Sources */,
+				A3438EBDE97DBEA615C9F590 /* BackgroundWakeService.swift in Sources */,
+				2F89D15CB122F3A7E29BABEB /* CalendarView.swift in Sources */,
+				792BA0F6B0888041AD4F28DD /* DayRouteView.swift in Sources */,
+				94343B5F76A87C258F65CDCE /* DemoDataSeeder.swift in Sources */,
+				33FE57F7A63B391D3C3EAECA /* Formatters.swift in Sources */,
+				3EF4861D67A364D088A60EF0 /* HealthKitService.swift in Sources */,
+				33424C43B32FA153BE529A67 /* HomeView.swift in Sources */,
+				BB75E9539AB92E2CAD2B127E /* LiveRecordingView.swift in Sources */,
+				5627831071F0E59141704A13 /* LocationAuthorization.swift in Sources */,
+				C9E839A8BB3689BBEC870C03 /* LocationTracker.swift in Sources */,
+				50BB61BFF7FD952A673A8D39 /* MainTabView.swift in Sources */,
+				A90647F69A5E2ED147F28417 /* MapFitting.swift in Sources */,
+				E6A7E70E8325F3E8395D346C /* Motivation.swift in Sources */,
+				2F02326A3A92036007ABD27B /* MyPageView.swift in Sources */,
+				B6952EF3DE05ACD3A87440B3 /* NotificationService.swift in Sources */,
+				D03237E09FDBEF17CECE568E /* PedometerService.swift in Sources */,
+				D34052E569EF00908AEF58E3 /* PermissionsOnboardingView.swift in Sources */,
+				2AFF542E2E122681F728B5A7 /* PersistenceController.swift in Sources */,
+				884F5600A62E7F5C388450C4 /* PlaceLookupService.swift in Sources */,
+				E66D868CFD249042E7020E44 /* RootView.swift in Sources */,
+				BA7340510FF2B113C9002799 /* SessionCoordinator.swift in Sources */,
+				0AA14A1C740A572BCA39D2B7 /* SessionDetailView.swift in Sources */,
+				DC868ACF7AA6DC87A40CB1CA /* StatCard.swift in Sources */,
+				5F173314DE3A16B310A3A982 /* StepLedgerService.swift in Sources */,
+				90187EACBE163B71246931A6 /* TekComponents.swift in Sources */,
+				65408FB44DA4B1D005153DD9 /* TekTheme.swift in Sources */,
+				6C0BDCCF9D2180CCC2DF98C7 /* Tekulog.xcdatamodeld in Sources */,
+				29C4568B0CA8476CA2511946 /* TekulogApp.swift in Sources */,
+				43BD9CBEE36BD94434CD57BB /* Tunables.swift in Sources */,
+				BC7ADA8DB84EB579DF67473F /* WalkRepository.swift in Sources */,
+				36FAB05BC3B1B1ED4BE86ACE /* WalkSession+Extensions.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		3420B04C110FDCEA2004F658 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Tekulog/Resources/Tekulog.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 7N355XPFBB;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				INFOPLIST_FILE = Tekulog/Resources/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.vfgnp.Tekulog;
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		56843CC70C365B8DE40C16B6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Tekulog/Resources/Tekulog.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 7N355XPFBB;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				INFOPLIST_FILE = Tekulog/Resources/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.vfgnp.Tekulog;
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		9A1F9FB359E41537F6231B81 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_LANGUAGE = ja;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		FAED40E2593EA770AB45A88C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_LANGUAGE = ja;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		3126F78D825A08EB3C2F8550 /* Build configuration list for PBXNativeTarget "Tekulog" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				56843CC70C365B8DE40C16B6 /* Debug */,
+				3420B04C110FDCEA2004F658 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		72C562424E86D57785F905E2 /* Build configuration list for PBXProject "Tekulog" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9A1F9FB359E41537F6231B81 /* Debug */,
+				FAED40E2593EA770AB45A88C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		D9B900272432B3F0F2B607FB /* Tekulog.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				D7879C429EA9F2C9AFD6BB82 /* Tekulog.xcdatamodel */,
+			);
+			currentVersion = D7879C429EA9F2C9AFD6BB82 /* Tekulog.xcdatamodel */;
+			path = Tekulog.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
+	};
+	rootObject = 91BB0CD2F1AF3306F1C843F8 /* Project object */;
+}

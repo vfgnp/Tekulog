@@ -14,8 +14,11 @@ build/
 *.dSYM.zip
 *.dSYM
 
-# Generated Xcode project (assembled from project.yml via XcodeGen)
-Tekulog.xcodeproj/
+# Xcode project は XcodeGen 生成物だが、Xcode Cloud がリポジトリから
+# 直接ビルドするためコミットする(project.yml 編集後は xcodegen generate を忘れずに)。
+# ユーザー固有データだけ除外:
+Tekulog.xcodeproj/xcuserdata/
+Tekulog.xcodeproj/project.xcworkspace/xcuserdata/
 
 # Swift Package Manager
 .build/
