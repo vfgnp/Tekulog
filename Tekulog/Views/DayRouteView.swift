@@ -72,6 +72,24 @@ struct DayRouteView: View {
         }
     }
 
+    /// 全ルートの座標(カメラのフィッティング用)。
+    private var allCoords: [CLLocationCoordinate2D] {
+        routes.flatMap { $0.coords }
+    }
+
+    /// 全ルートが収まるようカメラを合わせる。`.automatic` はポリラインのみだと
+    /// ズームしないので、明示的に region を計算する。
+    private func fitAllRoutes(animated: Bool) {
+        let coords = allCoords
+        guard !coords.isEmpty else { return }
+        let region = MapFitting.region(for: coords)
+        if animated {
+            withAnimation { camera = .region(region) }
+        } else {
+            camera = .region(region)
+        }
+    }
+
     var body: some View {
         ZStack(alignment: .top) {
             mapLayer
@@ -81,6 +99,7 @@ struct DayRouteView: View {
         .safeAreaInset(edge: .bottom, spacing: 0) { bottomSheet }
         .background(TekTheme.background)
         .toolbar(.hidden, for: .navigationBar)
+        .onAppear { fitAllRoutes(animated: false) }
         .task(id: selectedID) {
             await places.lookup(waypoints: waypoints)
         }
@@ -287,7 +306,7 @@ struct DayRouteView: View {
     private func toggle(_ session: WalkSession, coords: [CLLocationCoordinate2D]) {
         if selectedID == session.objectID {
             selectedID = nil
-            withAnimation { camera = .automatic }
+            fitAllRoutes(animated: true)
         } else {
             selectedID = session.objectID
             withAnimation { camera = .region(MapFitting.region(for: coords)) }
