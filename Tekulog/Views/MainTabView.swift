@@ -65,10 +65,23 @@ struct MainTabView: View {
         case .calendar:
             NavigationStack { CalendarView() }
         case .map:
-            NavigationStack { DayRouteScreen() }
+            NavigationStack { DayRouteScreen(initialDay: mapInitialDay) }
         case .myPage:
             NavigationStack { MyPageView(locationAuth: locationAuth) }
         }
+    }
+
+    /// マップタブの初期日。スクショ用 `-demoMapDaysAgo N`(N日前)で
+    /// デモセッションを置いた過去日を直接開ける(DEBUG限定)。
+    private var mapInitialDay: Date {
+        #if DEBUG
+        let raw = UserDefaults.standard.object(forKey: "demoMapDaysAgo")
+        if let daysAgo = (raw as? Int) ?? (raw as? String).flatMap({ Int($0) }),
+           let day = Calendar.current.date(byAdding: .day, value: -daysAgo, to: Date()) {
+            return day
+        }
+        #endif
+        return Date()
     }
 
     // MARK: - ボトムバー
