@@ -91,17 +91,17 @@ final class PlaceLookupService: ObservableObject {
             geocoder.reverseGeocodeLocation(location,
                                             preferredLocale: Locale(identifier: "ja_JP")) { placemarks, _ in
                 withExtendedLifetime(geocoder) {}   // 完了まで geocoder を生かす
-                let name = placemarks?.first.flatMap { p in
-                    p.areasOfInterest?.first ?? p.subLocality ?? p.thoroughfare ?? p.locality
-                }
-                continuation.resume(returning: name)
+                continuation.resume(returning: placemarks?.first.flatMap(displayName))
             }
         }
     }
 
-    /// 散歩で意味のある粒度で地名を作る: POI名 → 地区 → 通り → 市区町村。
-    private func displayName(_ p: CLPlacemark) -> String? {
-        p.areasOfInterest?.first
+    /// 逆ジオコーダーが areasOfInterest として広域に返してくる島名。地名としては無意味なので除外。
+    private nonisolated static let islandNames: Set<String> = ["本州", "北海道", "九州", "四国", "沖縄本島", "淡路島", "佐渡島"]
+
+    /// 散歩で意味のある粒度で地名を作る: POI名(島名除く)→ 町名 → 通り → 市区町村。
+    private nonisolated static func displayName(_ p: CLPlacemark) -> String? {
+        p.areasOfInterest?.first(where: { !islandNames.contains($0) })
             ?? p.subLocality
             ?? p.thoroughfare
             ?? p.locality
