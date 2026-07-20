@@ -93,6 +93,11 @@ enum Tunables {
     static let cardiacOutputRunningLitersPerMinute: Double = 16
     /// 比喩換算に使うバスタブ1杯の容量(L)。
     static let bathtubLiters: Double = 200
+    /// 血めぐりスコア(0〜100)の配点: 歩数の目標達成度ぶん。残りはランボーナス。
+    static let scoreStepsWeight: Double = 80
+    static let scoreRunBonusWeight: Double = 20
+    /// ランボーナスが満点になる「1日歩数に占めるランセッション歩数」の比率。
+    static let scoreRunShareForFullBonus: Double = 0.25
 
     // MARK: - 消費エネルギー推定
 

@@ -31,6 +31,19 @@ extension WalkSession {
     var coordinates: [CLLocationCoordinate2D] {
         orderedPoints.map { CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude) }
     }
+
+    /// ルートの自動命名(時間帯+種目):「朝の散歩」「夜のランニング」など。
+    var autoName: String {
+        let hour = Calendar.current.component(.hour, from: startedAt ?? Date())
+        let timeLabel: String
+        switch hour {
+        case 5..<11: timeLabel = "朝"
+        case 11..<15: timeLabel = "昼"
+        case 15..<19: timeLabel = "夕方"
+        default: timeLabel = "夜"
+        }
+        return "\(timeLabel)の\(activityKind.displayName)"
+    }
 }
 
 extension RoutePoint {

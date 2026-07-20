@@ -16,7 +16,8 @@ struct SessionDetailView: View {
             }
             .padding()
         }
-        .navigationTitle(session.activityKind.displayName)
+        .background(TekTheme.background)
+        .navigationTitle(session.autoName)
         .navigationBarTitleDisplayMode(.inline)
     }
 
@@ -26,14 +27,15 @@ struct SessionDetailView: View {
         if coords.count >= 2 {
             Map(initialPosition: .region(MapFitting.region(for: coords))) {
                 MapPolyline(coordinates: coords)
-                    .stroke(.tint, lineWidth: 5)
+                    .stroke(TekTheme.primary,
+                            style: StrokeStyle(lineWidth: 5, lineCap: .round, lineJoin: .round))
                 if let start = coords.first {
-                    Marker("開始", systemImage: "flag", coordinate: start)
-                        .tint(.green)
+                    Marker("開始", systemImage: "figure.walk", coordinate: start)
+                        .tint(TekTheme.primary)
                 }
                 if let end = coords.last {
                     Marker("終了", systemImage: "flag.checkered", coordinate: end)
-                        .tint(.red)
+                        .tint(TekTheme.coral)
                 }
             }
             .mapControls { MapScaleView() }
