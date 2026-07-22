@@ -51,8 +51,8 @@ struct PermissionsOnboardingView: View {
 
     private var buttonTitle: String {
         switch locationAuth.status {
-        case .notDetermined: return "権限を許可して始める"
-        case .authorizedWhenInUse: return "常に許可へ進む"
+        case .notDetermined: return "続ける"
+        case .authorizedWhenInUse: return "続ける"
         default: return "始める"
         }
     }
