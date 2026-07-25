@@ -30,6 +30,10 @@ final class LocationTracker: NSObject, CLLocationManagerDelegate {
     /// 距離水増しになるため、これより古いタイムスタンプの点は捨てる。
     private var startedTrackingAt: Date?
 
+    /// ウォームアップ完了フラグ。開始直後(GPSチップが冷えている間)は精度が悪くブレた点が届くため、
+    /// 最初の高精度点を受理するまで(または上限時間まで)は厳しめ精度で判定する。
+    private var warmedUp = false
+
     override init() {
         super.init()
         manager.delegate = self
@@ -43,6 +47,7 @@ final class LocationTracker: NSObject, CLLocationManagerDelegate {
         guard !isTracking else { return }
         isTracking = true
         startedTrackingAt = Date()
+        warmedUp = false
         // 精度設定(マイページ)は開始時に読む。高=ナビ用ベスト/標準=10m 級で省電力。
         let high = UserDefaults.standard.object(forKey: TekTheme.Keys.gpsHighAccuracy) as? Bool ?? true
         manager.desiredAccuracy = high ? Tunables.desiredAccuracy : kCLLocationAccuracyNearestTenMeters
@@ -53,6 +58,7 @@ final class LocationTracker: NSObject, CLLocationManagerDelegate {
     func stop() {
         isTracking = false
         startedTrackingAt = nil
+        warmedUp = false
         manager.stopUpdatingLocation()
     }
 
@@ -76,15 +82,26 @@ final class LocationTracker: NSObject, CLLocationManagerDelegate {
     }
 
     /// 精度が悪すぎる/座標が無効/開始前のキャッシュ点を捨てる。
+    /// さらに開始直後は、GPS精度が収束するまでのブレた点(コールドスタート)をウォームアップ・ゲートで捨てる。
     private func isAcceptable(_ location: CLLocation) -> Bool {
+        // 座標妥当性 + 開始前のキャッシュ位置(startUpdatingLocation 直後に届く古い点)を除外。
         guard location.horizontalAccuracy >= 0,
-              location.horizontalAccuracy <= Tunables.maxAcceptableHorizontalAccuracy else {
+              CLLocationCoordinate2DIsValid(location.coordinate),
+              let startedAt = startedTrackingAt,
+              location.timestamp >= startedAt else {
             return false
         }
-        // 開始前のタイムスタンプ = startUpdatingLocation 直後に届く古いキャッシュ位置。
-        if let startedAt = startedTrackingAt, location.timestamp < startedAt {
-            return false
+        if !warmedUp {
+            // 最初の高精度点を受理するまで(または上限時間経過まで)は厳しめ精度で判定する。
+            // 収束しなければ通常基準(50m)へフォールバックして空ルートを避ける。
+            let elapsed = location.timestamp.timeIntervalSince(startedAt)
+            let limit = elapsed < Tunables.gpsWarmupMaxDuration
+                ? Tunables.gpsWarmupAccuracy
+                : Tunables.maxAcceptableHorizontalAccuracy
+            guard location.horizontalAccuracy <= limit else { return false }
+            warmedUp = true
+            return true
         }
-        return CLLocationCoordinate2DIsValid(location.coordinate)
+        return location.horizontalAccuracy <= Tunables.maxAcceptableHorizontalAccuracy
     }
 }

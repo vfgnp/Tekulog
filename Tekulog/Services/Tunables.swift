@@ -8,27 +8,22 @@ enum Tunables {
 
     // MARK: - 開始条件(活動を継続検知したら記録開始)
 
-    /// 散歩(walking)を連続検知して記録を開始するまでの時間。
-    static let walkingStartDuration: TimeInterval = 2 * 60
-
-    /// ランニング(running)を連続検知して記録を開始するまでの時間。
-    /// 走行は誤検知が少なく強度が高いので散歩より短く。
-    static let runningStartDuration: TimeInterval = 1 * 60
-
-    /// 自転車(cycling)を連続検知して記録を開始するまでの時間。
-    /// 自転車は短時間で距離が出るため walking より短く。
-    static let cyclingStartDuration: TimeInterval = 2 * 60
-
     /// 開始判定に採用する CMMotionActivity の最低 confidence。
     static let minimumStartConfidence: CMMotionActivityConfidence = .medium
 
     /// 種別ごとの開始しきい時間。
+    /// 家の広さ(玄関〜道路までの歩き出し距離)は人により異なり最適値も違うため、
+    /// マイページで種別ごとに調整できる(未設定は `TekTheme.defaultStartDuration`)。
+    /// `ActivityDetector.evaluate()` が毎評価で呼ぶので設定変更は次の判定から反映される。
     static func startDuration(for kind: ActivityKind) -> TimeInterval {
+        let key: String
         switch kind {
-        case .walking: return walkingStartDuration
-        case .running: return runningStartDuration
-        case .cycling: return cyclingStartDuration
+        case .walking: key = TekTheme.Keys.startDurationWalking
+        case .running: key = TekTheme.Keys.startDurationRunning
+        case .cycling: key = TekTheme.Keys.startDurationCycling
         }
+        let stored = UserDefaults.standard.object(forKey: key) as? Int ?? TekTheme.defaultStartDuration
+        return TimeInterval(min(120, max(5, stored)))   // 不正値ガード(5〜120s)
     }
 
     // MARK: - 終了条件(移動が止まったら記録終了)
@@ -62,6 +57,13 @@ enum Tunables {
 
     /// 明らかに飛んだ精度の点を捨てる上限(m)。
     static let maxAcceptableHorizontalAccuracy: CLLocationDistance = 50
+
+    /// GPSコールドスタート対策。開始直後は精度が収束するまで、通常より厳しい精度でのみ点を受理する。
+    static let gpsWarmupAccuracy: CLLocationAccuracy = 20
+
+    /// ウォームアップの上限時間(秒)。この時間内に高精度点が得られなければ通常基準(50m)にフォールバックする
+    /// (市街地の谷間などで永久に空ルートにならないための保険)。
+    static let gpsWarmupMaxDuration: TimeInterval = 20
 
     // MARK: - アイドル中の生存(バックグラウンド常時起動)
 
