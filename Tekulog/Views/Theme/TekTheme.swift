@@ -31,9 +31,15 @@ enum TekTheme {
         static let stepGoal = "stepGoal"
         static let autoRecordEnabled = "autoRecordEnabled"
         static let gpsHighAccuracy = "gpsHighAccuracy"
+        // 種別ごとの「記録が始まるまでの時間」(秒)。家の広さ等で最適値が異なるため調整可能。
+        static let startDurationWalking = "startDurationWalking"
+        static let startDurationRunning = "startDurationRunning"
+        static let startDurationCycling = "startDurationCycling"
     }
     /// 歩数目標の既定値。
     static let defaultStepGoal = 10_000
+    /// 記録開始しきい時間の既定値(秒)。5〜120 の範囲、5秒刻み。
+    static let defaultStartDuration = 45
 }
 
 extension Color {

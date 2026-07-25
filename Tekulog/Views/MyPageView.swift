@@ -11,6 +11,9 @@ struct MyPageView: View {
     @AppStorage(TekTheme.Keys.stepGoal) private var stepGoal = TekTheme.defaultStepGoal
     @AppStorage(TekTheme.Keys.autoRecordEnabled) private var autoRecord = true
     @AppStorage(TekTheme.Keys.gpsHighAccuracy) private var gpsHighAccuracy = true
+    @AppStorage(TekTheme.Keys.startDurationWalking) private var startWalking = TekTheme.defaultStartDuration
+    @AppStorage(TekTheme.Keys.startDurationRunning) private var startRunning = TekTheme.defaultStartDuration
+    @AppStorage(TekTheme.Keys.startDurationCycling) private var startCycling = TekTheme.defaultStartDuration
 
     @FetchRequest(
         sortDescriptors: [NSSortDescriptor(keyPath: \DailyStat.day, ascending: false)]
@@ -29,6 +32,9 @@ struct MyPageView: View {
     /// 歩数目標の選択肢。
     private let goalOptions = [6_000, 8_000, 10_000, 12_000, 15_000, 20_000]
 
+    /// 記録開始しきい時間の選択肢(秒)。5〜120 を 5秒刻み。
+    private let startDurationOptions = Array(stride(from: 5, through: 120, by: 5))
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
@@ -42,6 +48,12 @@ struct MyPageView: View {
 
                 SectionLabel("記録").padding(.top, 6)
                 recordGroup
+                if autoRecord {
+                    Text("歩き出しから記録が始まるまでの時間です。短いほど始まりを捉えますが、些細な歩行でも記録が始まりやすくなります。")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(TekTheme.sub)
+                        .padding(.horizontal, 4)
+                }
 
                 SectionLabel("アプリ設定")
                 appGroup
@@ -143,6 +155,11 @@ struct MyPageView: View {
             TekSettingRow(iconBackground: TekTheme.primaryPale, label: "自動記録") {
                 Toggle("", isOn: $autoRecord).labelsHidden().tint(TekTheme.primary)
             }
+            if autoRecord {
+                startRow(label: "散歩の記録開始", selection: $startWalking, bg: TekTheme.primaryPale)
+                startRow(label: "ランニングの記録開始", selection: $startRunning, bg: TekTheme.amberPale)
+                startRow(label: "自転車の記録開始", selection: $startCycling, bg: TekTheme.coralPale)
+            }
             TekSettingRow(iconBackground: TekTheme.amberPale, label: "1日の歩数目標") {
                 Menu {
                     Picker("歩数目標", selection: $stepGoal) {
@@ -200,6 +217,19 @@ struct MyPageView: View {
         }
         .background(.white, in: RoundedRectangle(cornerRadius: 18))
         .shadow(color: TekTheme.cardShadow, radius: 8, y: 4)
+    }
+
+    /// 種別ごとの「記録開始までの時間」ピッカー行。5〜120秒を 5秒刻みで選ぶ。
+    private func startRow(label: String, selection: Binding<Int>, bg: Color) -> some View {
+        TekSettingRow(iconBackground: bg, label: label) {
+            Menu {
+                Picker(label, selection: selection) {
+                    ForEach(startDurationOptions, id: \.self) { Text("\($0)秒").tag($0) }
+                }
+            } label: {
+                trailingValue("\(selection.wrappedValue)秒")
+            }
+        }
     }
 
     private func trailingValue(_ text: String) -> some View {
