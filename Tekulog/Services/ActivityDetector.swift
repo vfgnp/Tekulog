@@ -19,6 +19,16 @@ final class ActivityDetector {
     /// 記録を終了すべきと判定したとき。引数は「動きが止まった時刻」(停止が始まった時刻)。
     var onShouldStop: ((Date) -> Void)?
 
+    /// 「歩行っぽい」候補を検知した瞬間(まだ startDuration の sustained ゲートはクリアしていない)。
+    /// GPS の先行起動トリガー用 — 確定を待たずに GPS を回し始め、実際の出発地点からルートを
+    /// 取りこぼさないための通知。`mode == .idle` のときのみ発火する(tracking 中は既に
+    /// セッションの GPS が動いているため不要かつ、後述の cancel と対で誤発火を避ける)。
+    var onCandidateStart: ((ActivityKind) -> Void)?
+    /// 候補が確定に至らず破棄されたとき(誤検知で stationary/automotive へ戻った、または
+    /// suspend からの解凍でライブ状態を捨てた)。呼び出し側は先行起動した GPS とバッファを
+    /// 破棄すること。`mode == .idle` のときのみ発火する。
+    var onCandidateCancelled: (() -> Void)?
+
     private(set) var mode: Mode = .idle
 
     /// ライブ検知が最後に動いた時刻(evaluate 実行時に更新)。evaluationTimer は
@@ -185,6 +195,12 @@ final class ActivityDetector {
             if movingKind != kind {
                 movingKind = kind
                 movingSince = clampedStart
+                // 候補検知(まだ sustained ゲート未達)。GPS 先行起動のトリガー。
+                // kind の切り替わり(例: walking→running を automotive/stationary を挟まず
+                // 観測)でも発火する — 呼び出し側でバッファの所有 kind を切り替えるため。
+                if mode == .idle {
+                    onCandidateStart?(kind)
+                }
             }
             stoppedSince = nil
             automotiveSince = nil
@@ -193,6 +209,9 @@ final class ActivityDetector {
             if automotiveSince == nil {
                 automotiveSince = clampedStart
             }
+            if mode == .idle, movingKind != nil {
+                onCandidateCancelled?()
+            }
             movingKind = nil
             movingSince = nil
             stoppedSince = nil
@@ -200,6 +219,9 @@ final class ActivityDetector {
             // 停止(休憩・立ち止まり)。
             if stoppedSince == nil {
                 stoppedSince = clampedStart
+            }
+            if mode == .idle, movingKind != nil {
+                onCandidateCancelled?()
             }
             movingKind = nil
             movingSince = nil
@@ -220,6 +242,14 @@ final class ActivityDetector {
         // 進行中の活動の拾い直しは履歴照会(recoverAfterThaw)が担う。
         if let last = lastEvaluatedAt, now.timeIntervalSince(last) > Tunables.liveDetectionFreshWindow {
             AppLog.activity.notice("evaluate: suspend 解凍を検知(空白 \(Int(now.timeIntervalSince(last)), privacy: .public)s) → 状態リセット+履歴照会")
+            // 育ちかけの候補バッファ(先行GPS)があれば凍結を跨がせず必ず破棄する。
+            // 跨がせると (a) GPS が誰にも stop() されず回りっぱなしになる、
+            // (b) 解凍後に別セッションが確定した際、凍結前の古いバッファが誤接続され、
+            // 実測されていない巨大な空白が直線で結ばれる(敷地を横切る直線と同型の不具合、
+            // より深刻な規模で再現する)。
+            if mode == .idle, movingKind != nil {
+                onCandidateCancelled?()
+            }
             movingKind = nil
             movingSince = nil
             stoppedSince = nil

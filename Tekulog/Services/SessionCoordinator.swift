@@ -56,6 +56,11 @@ final class SessionCoordinator: ObservableObject {
     private var pendingSamples: [RouteSample] = []
     private var flushTimer: Timer?
 
+    // 候補バッファ(先行GPSバッファリング)。sustained 確定前に先行起動した GPS 点を貯める。
+    // 確定(beginSession)で同 kind ならルート先頭に接続、キャンセルで破棄する。
+    private var candidateKind: ActivityKind?
+    private var candidateSamples: [RouteSample] = []
+
     init(detector: ActivityDetector = ActivityDetector(),
          locationTracker: LocationTracker = LocationTracker(),
          pedometer: PedometerService = PedometerService(),
@@ -164,6 +169,11 @@ final class SessionCoordinator: ObservableObject {
                 // (「モード同期は beginSession/endSession が一元管理」の唯一の例外)。
                 AppLog.session.notice("自動開始を無視(自動記録OFF設定)")
                 self.detector.setMode(.idle)
+                // setMode で ActivityDetector 側の movingKind は nil に戻るため、以後の
+                // stationary/automotive 遷移では onCandidateCancelled が二度と発火しない。
+                // 候補バッファ(先行GPS)が残っているとここで回収しない限り GPS が
+                // 回りっぱなしになるので、明示的に破棄する。
+                self.cancelCandidateBuffer()
                 return
             }
             self.beginSession(kind: kind)
@@ -171,8 +181,20 @@ final class SessionCoordinator: ObservableObject {
         detector.onShouldStop = { [weak self] stoppedAt in
             self?.endSession(stoppedAt: stoppedAt)
         }
+        detector.onCandidateStart = { [weak self] kind in
+            self?.beginCandidateBuffer(kind: kind)
+        }
+        detector.onCandidateCancelled = { [weak self] in
+            self?.cancelCandidateBuffer()
+        }
         locationTracker.onSample = { [weak self] sample in
-            self?.ingest(sample)
+            guard let self else { return }
+            if self.isRecording {
+                self.ingest(sample)
+            } else if self.candidateKind != nil {
+                self.appendCandidateSample(sample)
+            }
+            // どちらでもなければ stop() 直後の競合で漏れてきた点として破棄する。
         }
         pedometer.onUpdate = { [weak self] snapshot in
             self?.live?.steps = snapshot.steps
@@ -187,6 +209,41 @@ final class SessionCoordinator: ObservableObject {
         }
     }
 
+    // MARK: - 候補バッファ(先行GPSバッファリング)
+
+    /// 「歩行っぽい」候補を検知した瞬間、確定を待たずに GPS を先行起動してバッファに貯め始める。
+    private func beginCandidateBuffer(kind: ActivityKind) {
+        // 自動記録OFF設定なら候補段階での先行GPS起動もしない(手動開始は候補バッファなしでも
+        // 現在時刻起点で機能するので支障はなく、無駄な GPS 起動を避けられる)。
+        guard !isRecording, isAutoRecordEnabled else { return }
+        if candidateKind != kind {
+            candidateSamples.removeAll()
+        }
+        candidateKind = kind
+        AppLog.session.notice("beginCandidateBuffer: kind=\(kind.rawValue, privacy: .public) 先行GPS起動")
+        locationTracker.start()   // 既に isTracking なら内部ガードで no-op(warm-up 状態も壊れない)。
+    }
+
+    /// 候補が確定に至らず破棄されたとき、先行起動した GPS とバッファを破棄する。
+    /// `guard !isRecording` は ActivityDetector 側の `mode == .idle` ガードが将来壊れても、
+    /// セッション中の GPS だけは絶対に止めないための多重防御(最重要の安全弁)。
+    private func cancelCandidateBuffer() {
+        guard !isRecording else { return }
+        guard candidateKind != nil else { return }
+        AppLog.session.notice("cancelCandidateBuffer: 候補破棄 → GPS停止")
+        candidateKind = nil
+        candidateSamples.removeAll()
+        locationTracker.stop()
+    }
+
+    /// 候補バッファへサンプルを追加する。上限到達後は「先頭を捨てる」のではなく
+    /// 新規追加を止めるだけにする — 先頭(最古の点)は確定時に startedAt の根拠となる
+    /// 最重要データのため、これを失うと候補継続が長引くケースほど効果が薄れてしまう。
+    private func appendCandidateSample(_ sample: RouteSample) {
+        guard candidateSamples.count < Tunables.candidateBufferCap else { return }
+        candidateSamples.append(sample)
+    }
+
     // MARK: - セッション開始
 
     private func beginSession(kind: ActivityKind) {
@@ -197,7 +254,41 @@ final class SessionCoordinator: ObservableObject {
         AppLog.session.notice("beginSession: kind=\(kind.rawValue, privacy: .public) GPS/歩数計 起動")
         // detector モード同期はここで一元管理(自動/手動/ウェイクの全経路で不変)。
         detector.setMode(.tracking)
-        let now = Date()
+
+        // 同 kind の候補バッファがあればルート先頭に接続する。SessionCoordinator 側の
+        // 候補状態はここで即座に畳む(以降の onSample 再入があっても二重消費しないため)。
+        var bufferedSamples: [RouteSample] = []
+        if candidateKind == kind {
+            bufferedSamples = candidateSamples
+        }
+        candidateKind = nil
+        candidateSamples.removeAll()
+
+        // バッファの最新点が古すぎる(=候補バッファリング中に GPS 配信が途切れた。
+        // suspend からの復帰が handleBackgroundWake 経由で thaw 検出より先に走った場合など)なら、
+        // 実測されていない空白をルートに直線で混入させる恐れがあるため、バッファ全体を信用しない。
+        if let last = bufferedSamples.last,
+           Date().timeIntervalSince(last.timestamp) > Tunables.candidateBufferMaxSampleAge {
+            AppLog.session.error("beginSession: 候補バッファの配信に空白の疑い → 破棄しDate()にフォールバック")
+            bufferedSamples = []
+        }
+
+        // バッファがあればその先頭(実測 GPS が最初に届いた時刻)を startedAt に採用する。
+        // 異常に古い値(将来のリグレッションで候補キャンセルが漏れた場合の最終防波堤)なら
+        // 破棄して現在時刻にフォールバックする。
+        let earliestPlausible = Date().addingTimeInterval(
+            -(Tunables.startDuration(for: kind) + Tunables.gpsWarmupMaxDuration + 30))
+        let now: Date
+        if let first = bufferedSamples.first, first.timestamp >= earliestPlausible {
+            now = first.timestamp
+        } else {
+            if !bufferedSamples.isEmpty {
+                AppLog.session.error("beginSession: 候補バッファの先頭時刻が異常に古い → 破棄しDate()にフォールバック")
+                bufferedSamples = []
+            }
+            now = Date()
+        }
+
         let uuid = UUID()
         currentSessionUUID = uuid
         currentKind = kind
@@ -208,7 +299,10 @@ final class SessionCoordinator: ObservableObject {
 
         live = LiveStats(kind: kind, startedAt: now)
 
-        locationTracker.start()
+        locationTracker.start()   // 候補経由で既に起動済みなら内部ガードで no-op。
+        for sample in bufferedSamples {
+            ingest(sample)   // 通常のライブ点と同じ経路で distance/座標/pendingSamples を構築。
+        }
         pedometer.start(from: now)
         notifications.notifyRecordingStarted(kind: kind)
         startFlushTimer()

@@ -65,6 +65,23 @@ enum Tunables {
     /// (市街地の谷間などで永久に空ルートにならないための保険)。
     static let gpsWarmupMaxDuration: TimeInterval = 20
 
+    // MARK: - 候補バッファ(先行GPSバッファリング)
+
+    /// 「歩行っぽい」候補検知〜sustained確定までの間、先行起動したGPS点を貯めるバッファの上限点数。
+    /// distanceFilter=8m 固定下で、最大候補継続時間(startDuration上限120s + gpsWarmupMaxDuration 20s)
+    /// を自転車の速い区間(~8-10m/s)で換算した点数に安全マージンを加えた値。
+    /// 上限到達後は先頭(=確定時に startedAt として採用される最重要の点)を守るため、
+    /// 新規サンプルの追加を止めるだけでバッファ自体は破棄しない。
+    static let candidateBufferCap = 300
+
+    /// 候補バッファ内の最新サンプルがこれより古ければ、GPS配信に途切れ(suspend等)があった
+    /// とみなしバッファ全体を破棄する。suspend からの復帰は `ActivityDetector.evaluate()` の
+    /// thaw検出と `SessionCoordinator.handleBackgroundWake()` の履歴照会という2経路があり、
+    /// どちらが先に走るかは OS のスケジューリング次第で保証されない(既存コードの
+    /// recoverAfterThaw のコメント参照)。thaw側の候補破棄より handleBackgroundWake が
+    /// 先に確定処理へ進んだ場合の保険。`liveDetectionFreshWindow` と同程度の桁数を採用。
+    static let candidateBufferMaxSampleAge: TimeInterval = 60
+
     // MARK: - アイドル中の生存(バックグラウンド常時起動)
 
     /// アイドル中(セッション外)にアプリを生かし続けるためのロケーション精度。
