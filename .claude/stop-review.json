@@ -1,0 +1,7 @@
+{
+  "enabled": true,
+  "review": true,
+  "testDesign": true,
+  "testExecution": true,
+  "testResultReview": true
+}

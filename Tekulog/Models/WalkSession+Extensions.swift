@@ -12,6 +12,13 @@ extension WalkSession {
         set { activityTypeRaw = newValue.rawValue }
     }
 
+    /// 文字列で保存している外出目的を型安全に扱う。`OutingClassifier` が確定時に設定し、
+    /// ユーザーがチップで上書きすると `purposeIsUserSet` も立つ。
+    var purpose: OutingPurpose {
+        get { OutingPurpose(rawValue: purposeRaw ?? "") ?? .outing }
+        set { purposeRaw = newValue.rawValue }
+    }
+
     /// 記録時間(秒)。終了前は現在時刻までの経過。
     var duration: TimeInterval {
         let end = endedAt ?? Date()

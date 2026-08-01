@@ -85,7 +85,9 @@ final class PlaceLookupService: ObservableObject {
     }
 
     /// 完了ハンドラ版を継続でラップし、Sendable な String だけを主アクターへ返す。
-    private static func reverseGeocodeName(_ location: CLLocation) async -> String? {
+    /// `private` ではない: 探索マップのフロンティア候補地名にも同じロジックを再利用する
+    /// (`ExploreMapView`)。
+    static func reverseGeocodeName(_ location: CLLocation) async -> String? {
         await withCheckedContinuation { continuation in
             let geocoder = CLGeocoder()
             geocoder.reverseGeocodeLocation(location,

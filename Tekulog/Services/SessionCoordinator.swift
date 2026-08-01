@@ -41,6 +41,10 @@ final class SessionCoordinator: ObservableObject {
     private let backgroundWake: BackgroundWakeService
     /// 24時間歩数台帳。ホーム画面が todaySteps を直接 observe するため公開。
     let stepLedger: StepLedgerService
+    /// 探索グリッド(ExploredCell)の読み書き。ライブ確定とバックフィルが同じインスタンスを
+    /// 共有することで二重カウントを防ぐ(ExplorationService のドキュメント参照)。
+    let explorationService: ExplorationService
+    private let classifier: OutingClassifier
 
     // 現在セッションの状態
     private var sessionID: NSManagedObjectID?
@@ -68,7 +72,8 @@ final class SessionCoordinator: ObservableObject {
          notifications: NotificationService = NotificationService(),
          repository: WalkRepository = WalkRepository(),
          backgroundWake: BackgroundWakeService = BackgroundWakeService(),
-         stepLedger: StepLedgerService = StepLedgerService()) {
+         stepLedger: StepLedgerService = StepLedgerService(),
+         explorationService: ExplorationService = ExplorationService()) {
         self.detector = detector
         self.locationTracker = locationTracker
         self.pedometer = pedometer
@@ -77,6 +82,8 @@ final class SessionCoordinator: ObservableObject {
         self.repository = repository
         self.backgroundWake = backgroundWake
         self.stepLedger = stepLedger
+        self.explorationService = explorationService
+        self.classifier = OutingClassifier(repository: repository)
 
         wire()
     }
@@ -451,11 +458,33 @@ final class SessionCoordinator: ObservableObject {
 
         try? await repository.finalizeSession(sessionID, endedAt: end, metrics: metrics)
 
+        // 外出目的の自動判定 + 探索グリッドへの反映(セッション確定後に一度だけ)。
+        await classifyAndRecordExploration(sessionID: sessionID, kind: kind, startedAt: start, totalDistance: finalDistance)
+
         // 採番済みの UUID をそのまま使って保存通知(再フェッチ不要)。
         notifications.notifyRecordingSaved(kind: kind,
                                            distanceMeters: finalDistance,
                                            steps: snapshot.steps,
                                            sessionID: sessionUUID)
+    }
+
+    /// `OutingClassifier` で外出目的を判定し、`ExplorationService` でルートを探索グリッドへ
+    /// 反映して、両方の結果を1回で永続化する。バックフィル(`ExplorationBackfillService`)も
+    /// 同じ経路(`WalkRepository.finalizeClassification` の `classifiedAt` ガード)を通る。
+    private func classifyAndRecordExploration(sessionID: NSManagedObjectID,
+                                              kind: ActivityKind,
+                                              startedAt: Date,
+                                              totalDistance: Double) async {
+        guard let coordinates = try? await repository.fetchRouteCoordinates(for: sessionID) else { return }
+        let home = TekTheme.homeCoordinate()
+        let purpose = await classifier.classify(kind: kind,
+                                                 sessionID: sessionID,
+                                                 startedAt: startedAt,
+                                                 coordinates: coordinates,
+                                                 totalDistance: totalDistance,
+                                                 home: home)
+        let newCellCount = (try? await explorationService.recordVisited(coordinates: coordinates, firstSeenAt: startedAt)) ?? 0
+        try? await repository.finalizeClassification(sessionID: sessionID, purpose: purpose, newCellCount: newCellCount)
     }
 
     private func estimatedEnergy(kind: ActivityKind, durationSeconds: TimeInterval) -> Double {

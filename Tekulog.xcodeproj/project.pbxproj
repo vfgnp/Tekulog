@@ -7,7 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0A8052E0066E0A1F04916664 /* ExploreMapViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF183B31847F039345182B75 /* ExploreMapViewTests.swift */; };
 		0AA14A1C740A572BCA39D2B7 /* SessionDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 240536452F99B7171CE101B4 /* SessionDetailView.swift */; };
+		118700C35613B4D202E19D60 /* ExplorationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F5DF370DCEF838BA705A14F /* ExplorationService.swift */; };
+		23094454C9D2B3094A143226 /* OutingPurpose.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619F1A20D4DEC6E8CDA4AE1D /* OutingPurpose.swift */; };
 		29C4568B0CA8476CA2511946 /* TekulogApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472121AB328F52F4603DD756 /* TekulogApp.swift */; };
 		2AFF542E2E122681F728B5A7 /* PersistenceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 602777194E17D0DF8D288A6A /* PersistenceController.swift */; };
 		2F02326A3A92036007ABD27B /* MyPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 099FCA9752894B5918EBD327 /* MyPageView.swift */; };
@@ -15,20 +18,25 @@
 		33424C43B32FA153BE529A67 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BE58EC54CC5380654BA2AFF /* HomeView.swift */; };
 		33FE57F7A63B391D3C3EAECA /* Formatters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64834264FAC33FB8A08E29E6 /* Formatters.swift */; };
 		36FAB05BC3B1B1ED4BE86ACE /* WalkSession+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EB620DCF95DAA2708E3D918 /* WalkSession+Extensions.swift */; };
+		3D76FB0AF50A5FA86DE8BCAB /* OutingClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4FDA0FE03E53F75E51DFE93 /* OutingClassifier.swift */; };
 		3EF4861D67A364D088A60EF0 /* HealthKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE14925F7896F6EB4237EBED /* HealthKitService.swift */; };
 		43BD9CBEE36BD94434CD57BB /* Tunables.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1880F6B509E2C01598B1ABB4 /* Tunables.swift */; };
+		4DFDDFEC1028D24A4139BD7A /* ExplorationServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EC396BFC406B7827E1E78A2 /* ExplorationServiceTests.swift */; };
 		50BB61BFF7FD952A673A8D39 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B87EBE2ADFDA635B68DD84F9 /* MainTabView.swift */; };
 		5627831071F0E59141704A13 /* LocationAuthorization.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50BD59B83685DC876ED7D59 /* LocationAuthorization.swift */; };
 		5F173314DE3A16B310A3A982 /* StepLedgerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DD29E43F9B8D699479B55B4 /* StepLedgerService.swift */; };
+		63AD1B2043CF0FFD8F96B496 /* OutingClassifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FDDFF9204960B87A3BA034A /* OutingClassifierTests.swift */; };
 		65408FB44DA4B1D005153DD9 /* TekTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EA33929EC5D382ABBF993CC /* TekTheme.swift */; };
 		6C0BDCCF9D2180CCC2DF98C7 /* Tekulog.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = D9B900272432B3F0F2B607FB /* Tekulog.xcdatamodeld */; };
 		792BA0F6B0888041AD4F28DD /* DayRouteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B93BF74D3002F281D884D7A1 /* DayRouteView.swift */; };
+		83DDDD518F1C54350226B9DA /* ExploreMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB8372A11EB1003156A9273D /* ExploreMapView.swift */; };
 		884F5600A62E7F5C388450C4 /* PlaceLookupService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F55D31921B0B71A8E8AEC26 /* PlaceLookupService.swift */; };
 		89FF6E962F6483E5EC6E5F93 /* ActivityKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = 661A1C10F6C556F40FE7C1F2 /* ActivityKind.swift */; };
 		8F545934951B380CF5CFB3F9 /* AchievementsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F258603B31C07091FF00635 /* AchievementsView.swift */; };
 		90187EACBE163B71246931A6 /* TekComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 876CF89A3C6793A55960190D /* TekComponents.swift */; };
 		94343B5F76A87C258F65CDCE /* DemoDataSeeder.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB03A09E9F8BAE8F7E1C4E4F /* DemoDataSeeder.swift */; };
 		A2840146135A4E7D0D5B953E /* AppLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3090752CB2CF089C2241C5BC /* AppLog.swift */; };
+		A28739EB5F19C1F55D012ED1 /* OutingPurposeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0598FFEE8420A849F032F5C /* OutingPurposeTests.swift */; };
 		A3438EBDE97DBEA615C9F590 /* BackgroundWakeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B09B8D474C557FF34937E28 /* BackgroundWakeService.swift */; };
 		A90647F69A5E2ED147F28417 /* MapFitting.swift in Sources */ = {isa = PBXBuildFile; fileRef = F75BEF003252F07AA818B49A /* MapFitting.swift */; };
 		B6952EF3DE05ACD3A87440B3 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8E96CAE35614467E1BD1EFE /* NotificationService.swift */; };
@@ -38,22 +46,38 @@
 		C9E839A8BB3689BBEC870C03 /* LocationTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F29CC06A07665ABBEE574E1 /* LocationTracker.swift */; };
 		D03237E09FDBEF17CECE568E /* PedometerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59C4178A7AE5E9686B64114A /* PedometerService.swift */; };
 		D34052E569EF00908AEF58E3 /* PermissionsOnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE9E9C91F2A4984FCF635F1B /* PermissionsOnboardingView.swift */; };
+		D9542519C8E00C7EF819EE07 /* WalkRepositoryClassificationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9418A97233B610D70B311F7 /* WalkRepositoryClassificationTests.swift */; };
 		DC868ACF7AA6DC87A40CB1CA /* StatCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 931B19C709E3ED1850EEFC35 /* StatCard.swift */; };
+		E3B90EE3FE7DE1ED71AB9FF5 /* ExplorationBackfillService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EACB2D11D591684569510F8D /* ExplorationBackfillService.swift */; };
 		E66D868CFD249042E7020E44 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 919B7F109BBE89E548877915 /* RootView.swift */; };
 		E6A7E70E8325F3E8395D346C /* Motivation.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECFCF8906992FF3B58D523A4 /* Motivation.swift */; };
+		E826E3450C4130DC03905575 /* HomeLocationSettingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FC1D8CD72A90345AEDFA58F /* HomeLocationSettingView.swift */; };
 		EC47EE865171A2D3D1E53651 /* Achievements.swift in Sources */ = {isa = PBXBuildFile; fileRef = A36A7107EDA87D3CB0749207 /* Achievements.swift */; };
 		F8142182C0207A2D21E3ABC0 /* ActivityDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27D7E352E46A2D01E398BC14 /* ActivityDetector.swift */; };
 		FE32A5B739AA8F7120542A99 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5036AD09F345B18DD87A8118 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		9816F22F6D402494BDE84C95 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 91BB0CD2F1AF3306F1C843F8 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C5BDED6D9FD2546E59483FD5;
+			remoteInfo = Tekulog;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		099FCA9752894B5918EBD327 /* MyPageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyPageView.swift; sourceTree = "<group>"; };
+		0FC1D8CD72A90345AEDFA58F /* HomeLocationSettingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeLocationSettingView.swift; sourceTree = "<group>"; };
 		1880F6B509E2C01598B1ABB4 /* Tunables.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tunables.swift; sourceTree = "<group>"; };
+		1F5DF370DCEF838BA705A14F /* ExplorationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExplorationService.swift; sourceTree = "<group>"; };
 		240536452F99B7171CE101B4 /* SessionDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionDetailView.swift; sourceTree = "<group>"; };
 		27D7E352E46A2D01E398BC14 /* ActivityDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityDetector.swift; sourceTree = "<group>"; };
 		2928CDA981B17AD99E4D77B8 /* Tekulog.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Tekulog.entitlements; sourceTree = "<group>"; };
 		2BE58EC54CC5380654BA2AFF /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		2EA33929EC5D382ABBF993CC /* TekTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TekTheme.swift; sourceTree = "<group>"; };
+		2FDDFF9204960B87A3BA034A /* OutingClassifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutingClassifierTests.swift; sourceTree = "<group>"; };
 		3090752CB2CF089C2241C5BC /* AppLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLog.swift; sourceTree = "<group>"; };
 		37E7D5FB690154DD972FF443 /* LiveRecordingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveRecordingView.swift; sourceTree = "<group>"; };
 		3EB620DCF95DAA2708E3D918 /* WalkSession+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WalkSession+Extensions.swift"; sourceTree = "<group>"; };
@@ -62,11 +86,13 @@
 		475B7F8EBB6AA4D13ABBB1B6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		47E499EA56DE62D3DA46E428 /* Tekulog.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Tekulog.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4DD29E43F9B8D699479B55B4 /* StepLedgerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepLedgerService.swift; sourceTree = "<group>"; };
+		4EC396BFC406B7827E1E78A2 /* ExplorationServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExplorationServiceTests.swift; sourceTree = "<group>"; };
 		4F29CC06A07665ABBEE574E1 /* LocationTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationTracker.swift; sourceTree = "<group>"; };
 		5036AD09F345B18DD87A8118 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		59C4178A7AE5E9686B64114A /* PedometerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PedometerService.swift; sourceTree = "<group>"; };
 		5CD63DD4EA7FECA3731A0AF6 /* SessionCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionCoordinator.swift; sourceTree = "<group>"; };
 		602777194E17D0DF8D288A6A /* PersistenceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceController.swift; sourceTree = "<group>"; };
+		619F1A20D4DEC6E8CDA4AE1D /* OutingPurpose.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutingPurpose.swift; sourceTree = "<group>"; };
 		625F6739CF9775F4B90ACD33 /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
 		64834264FAC33FB8A08E29E6 /* Formatters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formatters.swift; sourceTree = "<group>"; };
 		661A1C10F6C556F40FE7C1F2 /* ActivityKind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityKind.swift; sourceTree = "<group>"; };
@@ -77,16 +103,23 @@
 		919B7F109BBE89E548877915 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		931B19C709E3ED1850EEFC35 /* StatCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatCard.swift; sourceTree = "<group>"; };
 		A36A7107EDA87D3CB0749207 /* Achievements.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Achievements.swift; sourceTree = "<group>"; };
+		A4FDA0FE03E53F75E51DFE93 /* OutingClassifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutingClassifier.swift; sourceTree = "<group>"; };
 		A8E96CAE35614467E1BD1EFE /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		AE14925F7896F6EB4237EBED /* HealthKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitService.swift; sourceTree = "<group>"; };
+		B0598FFEE8420A849F032F5C /* OutingPurposeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutingPurposeTests.swift; sourceTree = "<group>"; };
 		B87EBE2ADFDA635B68DD84F9 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
 		B93BF74D3002F281D884D7A1 /* DayRouteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayRouteView.swift; sourceTree = "<group>"; };
+		BB8372A11EB1003156A9273D /* ExploreMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreMapView.swift; sourceTree = "<group>"; };
 		BE9E9C91F2A4984FCF635F1B /* PermissionsOnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionsOnboardingView.swift; sourceTree = "<group>"; };
 		D7879C429EA9F2C9AFD6BB82 /* Tekulog.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Tekulog.xcdatamodel; sourceTree = "<group>"; };
 		DB03A09E9F8BAE8F7E1C4E4F /* DemoDataSeeder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoDataSeeder.swift; sourceTree = "<group>"; };
+		EACB2D11D591684569510F8D /* ExplorationBackfillService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExplorationBackfillService.swift; sourceTree = "<group>"; };
 		ECFCF8906992FF3B58D523A4 /* Motivation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Motivation.swift; sourceTree = "<group>"; };
 		F50BD59B83685DC876ED7D59 /* LocationAuthorization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationAuthorization.swift; sourceTree = "<group>"; };
 		F75BEF003252F07AA818B49A /* MapFitting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapFitting.swift; sourceTree = "<group>"; };
+		F9418A97233B610D70B311F7 /* WalkRepositoryClassificationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalkRepositoryClassificationTests.swift; sourceTree = "<group>"; };
+		F9712FD02681169A884739FB /* TekulogTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = TekulogTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		FF183B31847F039345182B75 /* ExploreMapViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreMapViewTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -117,10 +150,23 @@
 				A36A7107EDA87D3CB0749207 /* Achievements.swift */,
 				661A1C10F6C556F40FE7C1F2 /* ActivityKind.swift */,
 				ECFCF8906992FF3B58D523A4 /* Motivation.swift */,
+				619F1A20D4DEC6E8CDA4AE1D /* OutingPurpose.swift */,
 				3EB620DCF95DAA2708E3D918 /* WalkSession+Extensions.swift */,
 				D9B900272432B3F0F2B607FB /* Tekulog.xcdatamodeld */,
 			);
 			path = Models;
+			sourceTree = "<group>";
+		};
+		62CEA51480A6CBFE8B5F5369 /* TekulogTests */ = {
+			isa = PBXGroup;
+			children = (
+				4EC396BFC406B7827E1E78A2 /* ExplorationServiceTests.swift */,
+				FF183B31847F039345182B75 /* ExploreMapViewTests.swift */,
+				2FDDFF9204960B87A3BA034A /* OutingClassifierTests.swift */,
+				B0598FFEE8420A849F032F5C /* OutingPurposeTests.swift */,
+				F9418A97233B610D70B311F7 /* WalkRepositoryClassificationTests.swift */,
+			);
+			path = TekulogTests;
 			sourceTree = "<group>";
 		};
 		7A3D149016B412CB7B3AAEC4 /* Persistence */ = {
@@ -138,7 +184,9 @@
 				8F258603B31C07091FF00635 /* AchievementsView.swift */,
 				625F6739CF9775F4B90ACD33 /* CalendarView.swift */,
 				B93BF74D3002F281D884D7A1 /* DayRouteView.swift */,
+				BB8372A11EB1003156A9273D /* ExploreMapView.swift */,
 				64834264FAC33FB8A08E29E6 /* Formatters.swift */,
+				0FC1D8CD72A90345AEDFA58F /* HomeLocationSettingView.swift */,
 				2BE58EC54CC5380654BA2AFF /* HomeView.swift */,
 				37E7D5FB690154DD972FF443 /* LiveRecordingView.swift */,
 				B87EBE2ADFDA635B68DD84F9 /* MainTabView.swift */,
@@ -157,6 +205,7 @@
 			isa = PBXGroup;
 			children = (
 				173DB8F4C5B51A360A5AD40C /* Tekulog */,
+				62CEA51480A6CBFE8B5F5369 /* TekulogTests */,
 				DA51C7B8F88C28340B707355 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -184,6 +233,7 @@
 			isa = PBXGroup;
 			children = (
 				47E499EA56DE62D3DA46E428 /* Tekulog.app */,
+				F9712FD02681169A884739FB /* TekulogTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -195,10 +245,13 @@
 				3090752CB2CF089C2241C5BC /* AppLog.swift */,
 				6B09B8D474C557FF34937E28 /* BackgroundWakeService.swift */,
 				DB03A09E9F8BAE8F7E1C4E4F /* DemoDataSeeder.swift */,
+				EACB2D11D591684569510F8D /* ExplorationBackfillService.swift */,
+				1F5DF370DCEF838BA705A14F /* ExplorationService.swift */,
 				AE14925F7896F6EB4237EBED /* HealthKitService.swift */,
 				F50BD59B83685DC876ED7D59 /* LocationAuthorization.swift */,
 				4F29CC06A07665ABBEE574E1 /* LocationTracker.swift */,
 				A8E96CAE35614467E1BD1EFE /* NotificationService.swift */,
+				A4FDA0FE03E53F75E51DFE93 /* OutingClassifier.swift */,
 				59C4178A7AE5E9686B64114A /* PedometerService.swift */,
 				3F55D31921B0B71A8E8AEC26 /* PlaceLookupService.swift */,
 				5CD63DD4EA7FECA3731A0AF6 /* SessionCoordinator.swift */,
@@ -211,6 +264,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		05F801BD9F6F701DD3B72734 /* TekulogTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3C80E930A9951B89E76D66F6 /* Build configuration list for PBXNativeTarget "TekulogTests" */;
+			buildPhases = (
+				9CF8F15014784AAE4F45A2E1 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				076AE7DD998FF5CD6BEE0733 /* PBXTargetDependency */,
+			);
+			name = TekulogTests;
+			packageProductDependencies = (
+			);
+			productName = TekulogTests;
+			productReference = F9712FD02681169A884739FB /* TekulogTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		C5BDED6D9FD2546E59483FD5 /* Tekulog */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 3126F78D825A08EB3C2F8550 /* Build configuration list for PBXNativeTarget "Tekulog" */;
@@ -259,6 +330,7 @@
 			projectRoot = "";
 			targets = (
 				C5BDED6D9FD2546E59483FD5 /* Tekulog */,
+				05F801BD9F6F701DD3B72734 /* TekulogTests */,
 			);
 		};
 /* End PBXProject section */
@@ -288,8 +360,12 @@
 				2F89D15CB122F3A7E29BABEB /* CalendarView.swift in Sources */,
 				792BA0F6B0888041AD4F28DD /* DayRouteView.swift in Sources */,
 				94343B5F76A87C258F65CDCE /* DemoDataSeeder.swift in Sources */,
+				E3B90EE3FE7DE1ED71AB9FF5 /* ExplorationBackfillService.swift in Sources */,
+				118700C35613B4D202E19D60 /* ExplorationService.swift in Sources */,
+				83DDDD518F1C54350226B9DA /* ExploreMapView.swift in Sources */,
 				33FE57F7A63B391D3C3EAECA /* Formatters.swift in Sources */,
 				3EF4861D67A364D088A60EF0 /* HealthKitService.swift in Sources */,
+				E826E3450C4130DC03905575 /* HomeLocationSettingView.swift in Sources */,
 				33424C43B32FA153BE529A67 /* HomeView.swift in Sources */,
 				BB75E9539AB92E2CAD2B127E /* LiveRecordingView.swift in Sources */,
 				5627831071F0E59141704A13 /* LocationAuthorization.swift in Sources */,
@@ -299,6 +375,8 @@
 				E6A7E70E8325F3E8395D346C /* Motivation.swift in Sources */,
 				2F02326A3A92036007ABD27B /* MyPageView.swift in Sources */,
 				B6952EF3DE05ACD3A87440B3 /* NotificationService.swift in Sources */,
+				3D76FB0AF50A5FA86DE8BCAB /* OutingClassifier.swift in Sources */,
+				23094454C9D2B3094A143226 /* OutingPurpose.swift in Sources */,
 				D03237E09FDBEF17CECE568E /* PedometerService.swift in Sources */,
 				D34052E569EF00908AEF58E3 /* PermissionsOnboardingView.swift in Sources */,
 				2AFF542E2E122681F728B5A7 /* PersistenceController.swift in Sources */,
@@ -318,9 +396,49 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		9CF8F15014784AAE4F45A2E1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4DFDDFEC1028D24A4139BD7A /* ExplorationServiceTests.swift in Sources */,
+				0A8052E0066E0A1F04916664 /* ExploreMapViewTests.swift in Sources */,
+				63AD1B2043CF0FFD8F96B496 /* OutingClassifierTests.swift in Sources */,
+				A28739EB5F19C1F55D012ED1 /* OutingPurposeTests.swift in Sources */,
+				D9542519C8E00C7EF819EE07 /* WalkRepositoryClassificationTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		076AE7DD998FF5CD6BEE0733 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C5BDED6D9FD2546E59483FD5 /* Tekulog */;
+			targetProxy = 9816F22F6D402494BDE84C95 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		2AA4C88CDFEDC6502BCAEDA8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.vfgnp.TekulogTests;
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Tekulog.app/Tekulog";
+			};
+			name = Release;
+		};
 		3420B04C110FDCEA2004F658 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -432,6 +550,26 @@
 			};
 			name = Debug;
 		};
+		B2FB249F76B5D7B841CC589A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.vfgnp.TekulogTests;
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Tekulog.app/Tekulog";
+			};
+			name = Debug;
+		};
 		FAED40E2593EA770AB45A88C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -500,6 +638,15 @@
 			buildConfigurations = (
 				56843CC70C365B8DE40C16B6 /* Debug */,
 				3420B04C110FDCEA2004F658 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		3C80E930A9951B89E76D66F6 /* Build configuration list for PBXNativeTarget "TekulogTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B2FB249F76B5D7B841CC589A /* Debug */,
+				2AA4C88CDFEDC6502BCAEDA8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

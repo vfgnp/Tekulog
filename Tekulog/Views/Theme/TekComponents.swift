@@ -140,6 +140,63 @@ struct MascotView: View {
     }
 }
 
+/// 外出目的ごとのアイコン色・背景色。ログ一覧・分類チップなど複数箇所で共通に使う。
+extension OutingPurpose {
+    var tekColors: (icon: Color, background: Color) {
+        switch self {
+        case .commute: return (TekTheme.blue, TekTheme.bluePale)
+        case .walk: return (TekTheme.primary, TekTheme.primaryPale)
+        case .run: return (TekTheme.coral, TekTheme.coralPale)
+        case .outing: return (Color(hex: 0x8A6BB0), Color(hex: 0xEBE2F3))
+        case .shopping: return (TekTheme.amber, TekTheme.amberPale)
+        }
+    }
+}
+
+/// 週間の外出目的サマリー(割合バー+件数つき凡例)。ホーム画面で使用。
+struct WeeklyPurposeBar: View {
+    struct Entry: Identifiable {
+        let purpose: OutingPurpose
+        let count: Int
+        var id: OutingPurpose { purpose }
+    }
+    let entries: [Entry]
+
+    private var total: Int { entries.reduce(0) { $0 + $1.count } }
+    private var nonZero: [Entry] { entries.filter { $0.count > 0 } }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            GeometryReader { geo in
+                HStack(spacing: 2) {
+                    ForEach(nonZero) { entry in
+                        entry.purpose.tekColors.icon
+                            .frame(width: max(4, geo.size.width * CGFloat(entry.count) / CGFloat(max(total, 1))))
+                    }
+                }
+                .clipShape(RoundedRectangle(cornerRadius: 7))
+            }
+            .frame(height: 14)
+
+            HStack(spacing: 12) {
+                ForEach(nonZero) { entry in
+                    HStack(spacing: 5) {
+                        Circle().fill(entry.purpose.tekColors.icon).frame(width: 8, height: 8)
+                        Text(entry.purpose.displayName)
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundStyle(TekTheme.ink)
+                        Text("\(entry.count)")
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundStyle(TekTheme.faint)
+                    }
+                }
+            }
+            .lineLimit(1)
+            .minimumScaleFactor(0.8)
+        }
+    }
+}
+
 /// 設定行(アイコン角丸+ラベル+トレーリング)。マイページで使用。
 struct TekSettingRow<Trailing: View>: View {
     let iconBackground: Color

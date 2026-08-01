@@ -35,13 +35,33 @@ targets:
     # (info:/entitlements: ブロックは使わない=XcodeGen に上書きさせない)。
     # フレームワークは import で自動リンク(Core Motion / Core Location / HealthKit / MapKit)。
 
+  TekulogTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "18.0"
+    sources:
+      - path: TekulogTests
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.vfgnp.TekulogTests
+        GENERATE_INFOPLIST_FILE: YES
+        SWIFT_EMIT_LOC_STRINGS: NO
+        ENABLE_USER_SCRIPT_SANDBOXING: YES
+    dependencies:
+      - target: Tekulog
+
 # Xcode Cloud はリポジトリ内の共有スキームを必要とするため明示的に生成する。
 schemes:
   Tekulog:
     build:
       targets:
         Tekulog: all
+        TekulogTests: [test]
     run:
       config: Debug
+    test:
+      config: Debug
+      targets:
+        - TekulogTests
     archive:
       config: Release

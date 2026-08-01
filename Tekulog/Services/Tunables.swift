@@ -139,4 +139,47 @@ enum Tunables {
 
     /// バッチが溜まらなくても定期 flush する間隔(秒)。
     static let pointFlushInterval: TimeInterval = 20
+
+    // MARK: - 探索マップ(グリッド)
+
+    /// 探索グリッドの1セルあたりの一辺(m)。ExploredCell の緯度経度バケット分割に使う。
+    static let explorationCellSizeMeters: Double = 75
+
+    /// フロンティア(未開拓方向)探索の最大半径(m)。自宅からこれより遠くは提案しない。
+    static let explorationFrontierMaxRadiusMeters: Double = 5_000
+
+    /// フロンティアのレイキャストを進める刻み幅(m)。
+    static let explorationFrontierStepMeters: Double = 200
+
+    /// フロンティアのレイキャスト方向数(360°をこの数で均等分割)。
+    static let explorationFrontierDirectionCount = 12
+
+    /// 「自宅まわりの開拓率」を計算する範囲の半径(m)。
+    static let explorationRateRadiusMeters: Double = 1_500
+
+    // MARK: - 外出目的の自動判定(OutingClassifier)
+
+    /// 通勤判定: 開始/終了座標がこの半径(m)以内なら「同じ地点」とみなす。
+    static let commuteCoordinateMatchRadiusMeters: Double = 150
+
+    /// 通勤判定: 過去セッションと比較する時間帯の許容幅(分、開始時刻の前後)。
+    static let commuteTimeWindowMinutes: Double = 90
+
+    /// 通勤判定: 同じ曜日区分・時間帯・地点の過去セッションがこの回数以上あれば通勤とみなす。
+    static let commuteMinRepeatCount = 2
+
+    /// 通勤判定で遡る過去セッションの日数。
+    static let commuteLookbackDays = 60
+
+    /// お買い物判定: セッション終了地点からこの半径(m)以内に店舗系 POI があれば候補とする。
+    static let shoppingSearchRadiusMeters: Double = 60
+
+    /// お買い物判定: 総移動距離がこれを超える場合は「お買い物」ではなく「お出かけ」寄りとみなす。
+    static let shoppingMaxSessionDistanceMeters: Double = 3_000
+
+    /// 散歩 vs お出かけ判定: 自宅からの最大逸脱距離がこれ以下なら「散歩」。
+    static let walkRadiusFromHomeMeters: Double = 2_000
+
+    /// 散歩 vs お出かけ判定(自宅未設定時のフォールバック): 総移動距離がこれ以下なら「散歩」。
+    static let walkDistanceCapMeters: Double = 3_000
 }

@@ -48,6 +48,11 @@ struct TekulogApp: App {
                     if UserDefaults.standard.bool(forKey: "didFinishOnboarding") {
                         coordinator.startMonitoring()
                     }
+                    // 探索マップ導入前からのセッションを未開拓分だけ後追いで反映する。
+                    // startMonitoring をブロックしないよう独立した Task で走らせる。
+                    Task {
+                        await ExplorationBackfillService(explorationService: coordinator.explorationService).runIfNeeded()
+                    }
                 }
         }
     }

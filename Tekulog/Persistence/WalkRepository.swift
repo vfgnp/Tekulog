@@ -29,6 +29,13 @@ struct SessionMetrics: Sendable {
     var healthKitWorkoutUUID: UUID?
 }
 
+/// 通勤判定(`OutingClassifier`)が過去セッションと照合するための最小限のスナップショット。
+struct CommuteCandidate: Sendable {
+    let startedAt: Date
+    let startCoordinate: CLLocationCoordinate2D
+    let endCoordinate: CLLocationCoordinate2D
+}
+
 /// WalkSession / RoutePoint の永続化操作。書き込みはバックグラウンド context 上で行う。
 ///
 /// `@unchecked Sendable`: 各メソッドが専用 background context を生成し `perform` 上で
@@ -178,6 +185,77 @@ final class WalkRepository: @unchecked Sendable {
             guard let session = try context.fetch(request).first else { return }
             context.delete(session)
             try context.save()
+        }
+    }
+
+    /// 確定済みセッションのルート座標を取得する(探索グリッド反映・外出目的判定に使う)。
+    func fetchRouteCoordinates(for sessionID: NSManagedObjectID) async throws -> [CLLocationCoordinate2D] {
+        let context = persistence.newBackgroundContext()
+        return try await context.perform {
+            guard let session = try context.existingObject(with: sessionID) as? WalkSession else { return [] }
+            return session.coordinates
+        }
+    }
+
+    /// 通勤判定用: 指定期間内の確定済み walking/cycling セッションの開始/終了地点を返す
+    /// (`sessionID` 自身は除外)。
+    func fetchCommuteCandidates(since: Date, before: Date, excluding sessionID: NSManagedObjectID) async throws -> [CommuteCandidate] {
+        let context = persistence.newBackgroundContext()
+        return try await context.perform {
+            let request = WalkSession.fetchRequest()
+            request.predicate = NSPredicate(
+                format: "startedAt >= %@ AND startedAt < %@ AND endedAt != nil AND activityTypeRaw IN %@",
+                since as NSDate, before as NSDate, ["walking", "cycling"])
+            let sessions = try context.fetch(request).filter { $0.objectID != sessionID }
+            return sessions.compactMap { session -> CommuteCandidate? in
+                guard let startedAt = session.startedAt else { return nil }
+                let coords = session.coordinates
+                guard let first = coords.first, let last = coords.last else { return nil }
+                return CommuteCandidate(startedAt: startedAt, startCoordinate: first, endCoordinate: last)
+            }
+        }
+    }
+
+    /// `OutingClassifier` の判定結果と、探索グリッドの新規開拓数を書き込む(確定時に一度だけ)。
+    /// `classifiedAt` が既に立っていれば書き込まない — ライブ確定とバックフィルが同じセッションを
+    /// 二重処理した場合に、後勝ちで正しい値(先に処理した側)を誤って 0 上書きするのを防ぐガード。
+    func finalizeClassification(sessionID: NSManagedObjectID, purpose: OutingPurpose, newCellCount: Int) async throws {
+        let context = persistence.newBackgroundContext()
+        try await context.perform {
+            guard let session = try context.existingObject(with: sessionID) as? WalkSession,
+                  session.classifiedAt == nil else { return }
+            session.purpose = purpose
+            session.exploredNewCellCount = Int64(newCellCount)
+            session.classifiedAt = Date()
+            try context.save()
+        }
+    }
+
+    /// ユーザーがログ詳細のチップで外出目的を手動上書きする。以後の一括再判定から保護するため
+    /// `purposeIsUserSet` も立てる。
+    func setPurpose(sessionID: NSManagedObjectID, purpose: OutingPurpose) async throws {
+        let context = persistence.newBackgroundContext()
+        try await context.perform {
+            guard let session = try context.existingObject(with: sessionID) as? WalkSession else { return }
+            session.purpose = purpose
+            session.purposeIsUserSet = true
+            try context.save()
+        }
+    }
+
+    /// 未分類(`classifiedAt == nil`)の確定済みセッションを `startedAt` 昇順で1件返す。
+    /// `ExplorationBackfillService` が起動時にこれを使って古いセッションを順に再生する。
+    /// カーソルではなくこのフラグで判定するため、ライブ確定が先に処理した最新セッションを
+    /// バックフィルが後から二重処理することもない。
+    func fetchOldestUnclassifiedSession() async throws -> (id: NSManagedObjectID, kind: ActivityKind, startedAt: Date, totalDistance: Double)? {
+        let context = persistence.newBackgroundContext()
+        return try await context.perform {
+            let request = WalkSession.fetchRequest()
+            request.predicate = NSPredicate(format: "classifiedAt == nil AND endedAt != nil")
+            request.sortDescriptors = [NSSortDescriptor(key: "startedAt", ascending: true)]
+            request.fetchLimit = 1
+            guard let session = try context.fetch(request).first, let startedAt = session.startedAt else { return nil }
+            return (session.objectID, session.activityKind, startedAt, session.totalDistance)
         }
     }
 }
