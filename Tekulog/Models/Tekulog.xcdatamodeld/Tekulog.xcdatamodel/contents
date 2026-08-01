@@ -3,10 +3,14 @@
     <entity name="WalkSession" representedClassName="WalkSession" syncable="YES" codeGenerationType="class">
         <attribute name="activityTypeRaw" optional="NO" attributeType="String" defaultValueString="walking"/>
         <attribute name="avgPace" optional="NO" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="classifiedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="endedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="energyBurned" optional="NO" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="exploredNewCellCount" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="healthKitWorkoutUUID" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="id" optional="NO" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="purposeIsUserSet" optional="NO" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="purposeRaw" optional="NO" attributeType="String" defaultValueString="outing"/>
         <attribute name="startedAt" optional="NO" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="totalDistance" optional="NO" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="totalSteps" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
@@ -14,6 +18,19 @@
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="id"/>
+            </uniquenessConstraint>
+        </uniquenessConstraints>
+    </entity>
+    <entity name="ExploredCell" representedClassName="ExploredCell" syncable="YES" codeGenerationType="class">
+        <attribute name="centerLatitude" optional="NO" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="centerLongitude" optional="NO" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="firstSeenAt" optional="NO" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="latBucket" optional="NO" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="lonBucket" optional="NO" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <uniquenessConstraints>
+            <uniquenessConstraint>
+                <constraint value="latBucket"/>
+                <constraint value="lonBucket"/>
             </uniquenessConstraint>
         </uniquenessConstraints>
     </entity>

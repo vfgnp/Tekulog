@@ -9,15 +9,17 @@ struct StatCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             Label(title, systemImage: symbol)
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .font(.system(size: 12, weight: .bold))
+                .foregroundStyle(TekTheme.sub)
             Text(value)
-                .font(.title3.bold())
+                .font(.tekNumber(18))
+                .foregroundStyle(TekTheme.ink)
                 .minimumScaleFactor(0.6)
                 .lineLimit(1)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
-        .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 12))
+        .background(.white, in: RoundedRectangle(cornerRadius: 12))
+        .shadow(color: TekTheme.cardShadow, radius: 8, y: 4)
     }
 }

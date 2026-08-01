@@ -14,6 +14,7 @@ struct MyPageView: View {
     @AppStorage(TekTheme.Keys.startDurationWalking) private var startWalking = TekTheme.defaultStartDuration
     @AppStorage(TekTheme.Keys.startDurationRunning) private var startRunning = TekTheme.defaultStartDuration
     @AppStorage(TekTheme.Keys.startDurationCycling) private var startCycling = TekTheme.defaultStartDuration
+    @AppStorage(TekTheme.Keys.homeAddressLabel) private var homeAddressLabel = ""
 
     @FetchRequest(
         sortDescriptors: [NSSortDescriptor(keyPath: \DailyStat.day, ascending: false)]
@@ -171,7 +172,7 @@ struct MyPageView: View {
                     trailingValue("\(stepGoal.formatted())歩")
                 }
             }
-            TekSettingRow(iconBackground: TekTheme.coralPale, label: "GPS精度", showsDivider: false) {
+            TekSettingRow(iconBackground: TekTheme.coralPale, label: "GPS精度") {
                 Menu {
                     Picker("GPS精度", selection: $gpsHighAccuracy) {
                         Text("高(精度優先)").tag(true)
@@ -181,6 +182,20 @@ struct MyPageView: View {
                     trailingValue(gpsHighAccuracy ? "高" : "標準")
                 }
             }
+            NavigationLink {
+                HomeLocationSettingView()
+            } label: {
+                TekSettingRow(iconBackground: Color(hex: 0xEAECEA), label: "自宅位置", showsDivider: false) {
+                    HStack(spacing: 6) {
+                        Text(homeAddressLabel.isEmpty ? "未設定" : homeAddressLabel)
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(TekTheme.sub)
+                            .lineLimit(1)
+                        chevron
+                    }
+                }
+            }
+            .buttonStyle(.plain)
         }
         .background(.white, in: RoundedRectangle(cornerRadius: 18))
         .shadow(color: TekTheme.cardShadow, radius: 8, y: 4)

@@ -1,4 +1,5 @@
 import SwiftUI
+import CoreLocation
 
 /// Claude Design モック(Teklog.dc.html)から抽出したデザイントークン。
 /// ライト固定の世界観(root で .preferredColorScheme(.light))。
@@ -35,6 +36,21 @@ enum TekTheme {
         static let startDurationWalking = "startDurationWalking"
         static let startDurationRunning = "startDurationRunning"
         static let startDurationCycling = "startDurationCycling"
+        // 自宅位置(探索マップ・外出目的の自動判定の基準点)。手動設定のみ、自動推定はしない。
+        static let homeLatitude = "homeLatitude"
+        static let homeLongitude = "homeLongitude"
+        static let homeAddressLabel = "homeAddressLabel"
+        static let homeLocationIsSet = "homeLocationIsSet"
+    }
+
+    /// 自宅位置(マイページで手動設定)。未設定なら nil。
+    /// `(0,0)` を「未設定」と誤認しないよう `homeLocationIsSet` を明示的なセンチネルとして使う。
+    static func homeCoordinate() -> CLLocationCoordinate2D? {
+        let defaults = UserDefaults.standard
+        guard defaults.bool(forKey: Keys.homeLocationIsSet) else { return nil }
+        let lat = defaults.double(forKey: Keys.homeLatitude)
+        let lon = defaults.double(forKey: Keys.homeLongitude)
+        return CLLocationCoordinate2D(latitude: lat, longitude: lon)
     }
     /// 歩数目標の既定値。
     static let defaultStepGoal = 10_000

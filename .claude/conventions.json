@@ -1,0 +1,21 @@
+[
+  {
+    "id": "project-yml-no-info-entitlements-block",
+    "filePattern": "project.yml",
+    "regex": "(?m)^(info|entitlements):",
+    "message": "project.yml に info:/entitlements: を書くと XcodeGen が Resources/Info.plist と Tekulog.entitlements を生成・上書きしてしまう(NS*UsageDescription が消える)。INFOPLIST_FILE / CODE_SIGN_ENTITLEMENTS ビルド設定で参照すること(CLAUDE.md Conventions & gotchas 参照)。"
+  },
+  {
+    "id": "project-yml-iphone-only",
+    "filePattern": "project.yml",
+    "regex": "TARGETED_DEVICE_FAMILY:\\s*[\"']?[\\d,]*2",
+    "message": "TARGETED_DEVICE_FAMILY に iPad(2)を含めない。iPad は GPS/CMMotionActivityManager/CMPedometer が使えず自動記録が機能しないため、このアプリは iPhone 専用方針(CLAUDE.md Conventions & gotchas 参照)。"
+  },
+  {
+    "id": "location-manager-hand-rolled-background-config",
+    "filePattern": "*.swift",
+    "excludePattern": "*LocationAuthorization.swift",
+    "regex": "\\.(allowsBackgroundLocationUpdates|pausesLocationUpdatesAutomatically|activityType)\\s*=(?!=)",
+    "message": "CLLocationManager の allowsBackgroundLocationUpdates / pausesLocationUpdatesAutomatically / activityType は LocationAuthorization.swift の configureForBackgroundFitness() 経由で設定すること。手書きコピーは設定がずれる(CLAUDE.md Conventions & gotchas 参照)。"
+  }
+]
