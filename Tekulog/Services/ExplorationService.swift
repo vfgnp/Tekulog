@@ -1,5 +1,7 @@
+import Combine
 import CoreData
 import CoreLocation
+import os
 
 /// 探索グリッド(`ExploredCell`)の読み書きを一手に引き受けるサービス。
 ///
@@ -13,28 +15,29 @@ import CoreLocation
 /// この理由から、`SessionCoordinator` が1つの `ExplorationService` インスタンスを所有し、
 /// バックフィル側にも同じインスタンスを注入すること(それぞれが独自に生成しないこと)。
 ///
+/// セル番号の計算(座標 → セル)は `ExplorationGrid` が唯一の実装で、ここでは行わない。
+///
 /// `@unchecked Sendable`: 保持する `context` へのアクセスは常に `context.perform` 上で
-/// 完結するためスレッド安全。
+/// 完結するためスレッド安全。`outingGate` は自身がロックで保護し、`rebuildState`
+/// (`CurrentValueSubject`)は `send` / `value` がスレッド安全。
 final class ExplorationService: @unchecked Sendable {
     private let context: NSManagedObjectContext
 
+    /// **外出単位の排他**。「グリッド再構築の全体」と「外出1件の確定後処理(経路取得→分類→
+    /// セル反映→新エリア数保存)」をこのゲートで直列化する。再構築の途中(セルが一部しか
+    /// 戻っていない状態)で外出が確定しても、その外出は再構築が終わってから処理されるので、
+    /// 新エリア数が「古い順に1回ずつ反映した結果」と一致する。
+    /// ゲートは再入不可: 保持中の処理は `recordVisited` などをそのまま呼ぶ(二重に取らない)。
+    /// 取得・解放は `OutingPostProcessor` と `ExplorationBackfillService` だけが行う。
+    let outingGate = AsyncGate()
+
+    /// グリッド再構築の実行中か。`CurrentValueSubject` は購読した時点で現在値を流すので、
+    /// 探索マップは「フラグを読む」と「変更通知を購読する」を別々に行わずに済む
+    /// (別々だと、その間に完了した場合に「更新中」表示が残る)。
+    let rebuildState = CurrentValueSubject<Bool, Never>(false)
+
     init(persistence: PersistenceController = .shared) {
         context = persistence.newBackgroundContext()
-    }
-
-    /// 緯度経度から、東西方向の歪み(緯度による経度1度あたりの距離差)を補正した
-    /// グリッドセル識別子を求める。自宅位置に依存しないので、自宅を変更してもズレない。
-    /// `internal`(テストから直接検証するため。`TekulogTests` 参照)。
-    func bucket(for coordinate: CLLocationCoordinate2D) -> (lat: Int32, lon: Int32, centerLat: Double, centerLon: Double) {
-        let metersPerDegreeLat = 111_320.0
-        let latCellDeg = Tunables.explorationCellSizeMeters / metersPerDegreeLat
-        let lonCellDeg = Tunables.explorationCellSizeMeters
-            / (metersPerDegreeLat * max(cos(coordinate.latitude * .pi / 180), 0.01))
-        let latBucket = Int32((coordinate.latitude / latCellDeg).rounded(.down))
-        let lonBucket = Int32((coordinate.longitude / lonCellDeg).rounded(.down))
-        let centerLat = (Double(latBucket) + 0.5) * latCellDeg
-        let centerLon = (Double(lonBucket) + 0.5) * lonCellDeg
-        return (latBucket, lonBucket, centerLat, centerLon)
     }
 
     /// 連続する点の間隔がセルサイズより大きい場合に中間点を補間する。
@@ -67,35 +70,82 @@ final class ExplorationService: @unchecked Sendable {
     /// - Returns: このセッションで新規に開拓されたセル数。
     @discardableResult
     func recordVisited(coordinates: [CLLocationCoordinate2D], firstSeenAt: Date) async throws -> Int {
-        guard !coordinates.isEmpty else { return 0 }
-        let densified = densify(coordinates)
-        let buckets = densified.map(bucket(for:))
-        return try await context.perform { [context] in
-            var newCount = 0
-            var handled = Set<Int64>()
-            for bucket in buckets {
-                // Int32 のペアを1つの Int64 キーへ詰めて、セッション内の重複 upsert を避ける。
-                let key = (Int64(bucket.lat) << 32) | Int64(UInt32(bitPattern: bucket.lon))
-                guard !handled.contains(key) else { continue }
-                handled.insert(key)
+        let valid = coordinates.filter(CLLocationCoordinate2DIsValid)
+        guard !valid.isEmpty else { return 0 }
 
-                let request = ExploredCell.fetchRequest()
-                request.predicate = NSPredicate(format: "latBucket == %d AND lonBucket == %d", bucket.lat, bucket.lon)
-                request.fetchLimit = 1
-                if try context.fetch(request).first == nil {
-                    let cell = ExploredCell(context: context)
-                    cell.latBucket = bucket.lat
-                    cell.lonBucket = bucket.lon
-                    cell.centerLatitude = bucket.centerLat
-                    cell.centerLongitude = bucket.centerLon
-                    cell.firstSeenAt = firstSeenAt
-                    newCount += 1
-                }
+        // 経路が通るセル(重複なし・初出順)。
+        var seen = Set<Int64>()
+        var cells: [ExplorationGrid.Cell] = []
+        for coordinate in densify(valid) {
+            let cell = ExplorationGrid.cell(for: coordinate)
+            if seen.insert(cell.key).inserted { cells.append(cell) }
+        }
+        guard let first = cells.first else { return 0 }
+        var minLat = first.latBucket, maxLat = first.latBucket
+        var minLon = first.lonBucket, maxLon = first.lonBucket
+        for cell in cells {
+            minLat = min(minLat, cell.latBucket); maxLat = max(maxLat, cell.latBucket)
+            minLon = min(minLon, cell.lonBucket); maxLon = max(maxLon, cell.lonBucket)
+        }
+
+        return try await context.perform { [context] in
+            // 既存セルの確認は、経路の外接範囲を1回 fetch して済ませる(セルごとに fetch すると、
+            // 全セッションを再生するグリッド再構築で「セッション数 × セル数」の往復になる)。
+            let request = NSFetchRequest<NSDictionary>(entityName: "ExploredCell")
+            request.resultType = .dictionaryResultType
+            request.propertiesToFetch = ["latBucket", "lonBucket"]
+            request.predicate = NSPredicate(
+                format: "latBucket >= %d AND latBucket <= %d AND lonBucket >= %d AND lonBucket <= %d",
+                minLat, maxLat, minLon, maxLon)
+            var existing = Set<Int64>()
+            for row in try context.fetch(request) {
+                guard let lat = (row["latBucket"] as? NSNumber)?.int32Value,
+                      let lon = (row["lonBucket"] as? NSNumber)?.int32Value else { continue }
+                existing.insert(ExplorationGrid.key(latBucket: lat, lonBucket: lon))
+            }
+
+            var newCount = 0
+            for cell in cells where !existing.contains(cell.key) {
+                let center = cell.center
+                let row = ExploredCell(context: context)
+                row.latBucket = cell.latBucket
+                row.lonBucket = cell.lonBucket
+                row.centerLatitude = center.latitude
+                row.centerLongitude = center.longitude
+                row.firstSeenAt = firstSeenAt
+                newCount += 1
             }
             if newCount > 0 {
                 try context.save()
             }
             return newCount
+        }
+    }
+
+    /// 開拓済みの全セルの中心座標を返す。探索マップのフォグ描画は表示範囲に依らず全件を
+    /// メモリに持つ(`FogCellIndex`)ので、その入力になる。
+    func fetchAllCells() async throws -> [CLLocationCoordinate2D] {
+        try await context.perform { [context] in
+            let request = NSFetchRequest<NSDictionary>(entityName: "ExploredCell")
+            request.resultType = .dictionaryResultType
+            request.propertiesToFetch = ["centerLatitude", "centerLongitude"]
+            return try context.fetch(request).compactMap { row in
+                guard let latitude = (row["centerLatitude"] as? NSNumber)?.doubleValue,
+                      let longitude = (row["centerLongitude"] as? NSNumber)?.doubleValue else { return nil }
+                return CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+            }
+        }
+    }
+
+    /// 開拓済みセルを全削除する(グリッド再構築の最初の手順)。
+    /// batch delete は context を経由せずストアを直接書き換えるので、直後に `reset()` して
+    /// この context が抱えている登録済みオブジェクトを捨てる(残すと削除済みの行を参照する)。
+    func resetAllCells() async throws {
+        try await context.perform { [context] in
+            let request = NSBatchDeleteRequest(
+                fetchRequest: NSFetchRequest<NSFetchRequestResult>(entityName: "ExploredCell"))
+            try context.execute(request)
+            context.reset()
         }
     }
 
@@ -132,12 +182,17 @@ final class ExplorationService: @unchecked Sendable {
 
     /// 自宅を中心に `Tunables.explorationFrontierDirectionCount` 方位へレイキャストし、
     /// 各方位で最初に見つかった未開拓地点を返す(未開拓の方位がなければその方位は含まない)。
+    ///
+    /// 「未開拓」は、その地点が**地図上で晴れて見えない**こと(= `explorationRevealRadiusMeters`
+    /// 以内に開拓済みセルの中心が無いこと)で判定する。晴れの半径(150m)はセル(75m)より広いので、
+    /// 「その地点のセルが未開拓か」だけで判定すると、晴れて見える場所に「未踏エリア」の印が立つ。
     func findFrontierCandidates(home: CLLocationCoordinate2D)
         async throws -> [(coordinate: CLLocationCoordinate2D, bearingDegrees: Double, distanceMeters: Double)] {
         let radius = Tunables.explorationFrontierMaxRadiusMeters
-        let box = boundingBox(center: home, radiusMeters: radius)
+        let box = boundingBox(center: home, radiusMeters: radius + Tunables.explorationRevealRadiusMeters)
         let explored = try await fetchCells(minLat: box.minLat, maxLat: box.maxLat, minLon: box.minLon, maxLon: box.maxLon)
-        let exploredBuckets = Set(explored.map(bucketKey(for:)))
+        // 保存済みの中心はセル番号だけで決まる値なので、セルへ戻すと元のセルになる。
+        let exploredKeys = Set(explored.map { ExplorationGrid.cell(for: $0).key })
 
         var candidates: [(coordinate: CLLocationCoordinate2D, bearingDegrees: Double, distanceMeters: Double)] = []
         let directionCount = Tunables.explorationFrontierDirectionCount
@@ -146,7 +201,7 @@ final class ExplorationService: @unchecked Sendable {
             var step = Tunables.explorationFrontierStepMeters
             while step <= radius {
                 let point = offset(from: home, distanceMeters: step, bearingDegrees: bearing)
-                if !exploredBuckets.contains(bucketKey(for: point)) {
+                if !isRevealed(point, exploredKeys: exploredKeys) {
                     candidates.append((point, bearing, step))
                     break
                 }
@@ -156,12 +211,25 @@ final class ExplorationService: @unchecked Sendable {
         return candidates
     }
 
-    // MARK: - 地理計算ヘルパー
-
-    func bucketKey(for coordinate: CLLocationCoordinate2D) -> Int64 {
-        let b = bucket(for: coordinate)
-        return (Int64(b.lat) << 32) | Int64(UInt32(bitPattern: b.lon))
+    /// `point` から晴れの半径以内に、開拓済みセルの中心があるか。
+    /// 近傍のセルだけを調べる(行ごとに経度セル幅が違うので、経度バケットは行ごとに求め直す)。
+    /// `internal`(テストから直接検証するため)。
+    func isRevealed(_ point: CLLocationCoordinate2D, exploredKeys: Set<Int64>) -> Bool {
+        let reveal = Tunables.explorationRevealRadiusMeters
+        let reach = Int32((reveal / Tunables.explorationCellSizeMeters).rounded(.up)) + 1
+        let baseRow = ExplorationGrid.latBucket(latitude: point.latitude)
+        for row in (baseRow - reach)...(baseRow + reach) {
+            let baseColumn = ExplorationGrid.lonBucket(longitude: point.longitude, latBucket: row)
+            for column in (baseColumn - reach)...(baseColumn + reach)
+            where exploredKeys.contains(ExplorationGrid.key(latBucket: row, lonBucket: column)) {
+                let center = ExplorationGrid.center(latBucket: row, lonBucket: column)
+                if distanceMeters(center, point) <= reveal { return true }
+            }
+        }
+        return false
     }
+
+    // MARK: - 地理計算ヘルパー
 
     private func distanceMeters(_ a: CLLocationCoordinate2D, _ b: CLLocationCoordinate2D) -> Double {
         CLLocation(latitude: a.latitude, longitude: a.longitude)
@@ -189,5 +257,46 @@ final class ExplorationService: @unchecked Sendable {
         let lon2 = lon1 + atan2(sin(bearingRad) * sin(angularDistance) * cos(lat1),
                                 cos(angularDistance) - sin(lat1) * sin(lat2))
         return CLLocationCoordinate2D(latitude: lat2 * 180 / .pi, longitude: lon2 * 180 / .pi)
+    }
+}
+
+/// 先着順の非同期ミューテックス(再入不可)。`ExplorationService.outingGate` として、
+/// 外出単位の処理を直列化するために使う。
+///
+/// `acquire()` は空いていれば即座に戻り、保持中なら待ち行列に入って中断する。
+/// `release()` は待ちがあれば先頭を再開し(保持をそのまま引き継ぐ)、なければ解放する。
+/// 使用箇所の Task はキャンセルされない前提で、キャンセルには対応しない。
+final class AsyncGate: Sendable {
+    private struct State {
+        var isHeld = false
+        var waiters: [CheckedContinuation<Void, Never>] = []
+    }
+
+    private let state = OSAllocatedUnfairLock(initialState: State())
+
+    func acquire() async {
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            let acquired = state.withLock { state -> Bool in
+                if state.isHeld {
+                    state.waiters.append(continuation)
+                    return false
+                }
+                state.isHeld = true
+                return true
+            }
+            // ロックの外で再開する(再開先がすぐ release() を呼んでも自己デッドロックしない)。
+            if acquired { continuation.resume() }
+        }
+    }
+
+    func release() {
+        let next = state.withLock { state -> CheckedContinuation<Void, Never>? in
+            guard !state.waiters.isEmpty else {
+                state.isHeld = false
+                return nil
+            }
+            return state.waiters.removeFirst()
+        }
+        next?.resume()
     }
 }

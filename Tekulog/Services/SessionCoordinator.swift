@@ -44,7 +44,8 @@ final class SessionCoordinator: ObservableObject {
     /// 探索グリッド(ExploredCell)の読み書き。ライブ確定とバックフィルが同じインスタンスを
     /// 共有することで二重カウントを防ぐ(ExplorationService のドキュメント参照)。
     let explorationService: ExplorationService
-    private let classifier: OutingClassifier
+    /// 確定後処理(外出目的の判定 + 探索グリッドへの反映)。グリッド再構築と排他で走る。
+    private let postProcessor: OutingPostProcessor
 
     // 現在セッションの状態
     private var sessionID: NSManagedObjectID?
@@ -83,7 +84,7 @@ final class SessionCoordinator: ObservableObject {
         self.backgroundWake = backgroundWake
         self.stepLedger = stepLedger
         self.explorationService = explorationService
-        self.classifier = OutingClassifier(repository: repository)
+        self.postProcessor = OutingPostProcessor(repository: repository, explorationService: explorationService)
 
         wire()
     }
@@ -458,33 +459,20 @@ final class SessionCoordinator: ObservableObject {
 
         try? await repository.finalizeSession(sessionID, endedAt: end, metrics: metrics)
 
-        // 外出目的の自動判定 + 探索グリッドへの反映(セッション確定後に一度だけ)。
-        await classifyAndRecordExploration(sessionID: sessionID, kind: kind, startedAt: start, totalDistance: finalDistance)
-
         // 採番済みの UUID をそのまま使って保存通知(再フェッチ不要)。
+        // 確定後処理より前に出す: 通知の内容は確定後処理の結果を使わず、確定後処理は
+        // グリッド再構築の完了を待つことがある(`ExplorationService.outingGate`)。
         notifications.notifyRecordingSaved(kind: kind,
                                            distanceMeters: finalDistance,
                                            steps: snapshot.steps,
                                            sessionID: sessionUUID)
-    }
 
-    /// `OutingClassifier` で外出目的を判定し、`ExplorationService` でルートを探索グリッドへ
-    /// 反映して、両方の結果を1回で永続化する。バックフィル(`ExplorationBackfillService`)も
-    /// 同じ経路(`WalkRepository.finalizeClassification` の `classifiedAt` ガード)を通る。
-    private func classifyAndRecordExploration(sessionID: NSManagedObjectID,
-                                              kind: ActivityKind,
-                                              startedAt: Date,
-                                              totalDistance: Double) async {
-        guard let coordinates = try? await repository.fetchRouteCoordinates(for: sessionID) else { return }
-        let home = TekTheme.homeCoordinate()
-        let purpose = await classifier.classify(kind: kind,
-                                                 sessionID: sessionID,
-                                                 startedAt: startedAt,
-                                                 coordinates: coordinates,
-                                                 totalDistance: totalDistance,
-                                                 home: home)
-        let newCellCount = (try? await explorationService.recordVisited(coordinates: coordinates, firstSeenAt: startedAt)) ?? 0
-        try? await repository.finalizeClassification(sessionID: sessionID, purpose: purpose, newCellCount: newCellCount)
+        // 外出目的の自動判定 + 探索グリッドへの反映(セッション確定後に一度だけ)。
+        // バックフィル/グリッド再構築(`ExplorationBackfillService`)も同じ `OutingPostProcessor` を通る。
+        await postProcessor.processFinalized(sessionID: sessionID,
+                                             kind: kind,
+                                             startedAt: start,
+                                             totalDistance: finalDistance)
     }
 
     private func estimatedEnergy(kind: ActivityKind, durationSeconds: TimeInterval) -> Double {
