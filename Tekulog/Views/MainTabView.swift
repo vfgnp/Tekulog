@@ -1,15 +1,15 @@
 import SwiftUI
 
-/// メインシェル。自前ボトムバー(ホーム/探索マップ/マイページの3タブ)。
+/// メインシェル。自前ボトムバー(ホーム/カレンダー/探索マップ/マイページの4タブ)。
 /// 記録は全自動検出のみ(手動開始UIは廃止)。手動停止はホーム画面右下のボタンが担う。
-/// カレンダーはタブから外れたが `CalendarView` 自体は削除しておらず、ホーム画面ヘッダーの
-/// アイコンから遷移する(過去のログを見る導線として維持)。
+/// カレンダー(過去のログを見る導線)はタブから直接開く。
 struct MainTabView: View {
     @EnvironmentObject private var coordinator: SessionCoordinator
     @ObservedObject var locationAuth: LocationAuthorization
 
+    /// rawValue はタブの並び順で、DEBUG の `-initialTab N` 起動引数がそのまま指す番号でもある。
     enum Tab: Int {
-        case home = 0, exploreMap, myPage
+        case home = 0, calendar, exploreMap, myPage
     }
 
     @State private var tab: Tab = .home
@@ -41,6 +41,8 @@ struct MainTabView: View {
         switch tab {
         case .home:
             NavigationStack { HomeView(ledger: coordinator.stepLedger) }
+        case .calendar:
+            NavigationStack { CalendarView() }
         case .exploreMap:
             NavigationStack { ExploreMapView() }
         case .myPage:
@@ -53,6 +55,7 @@ struct MainTabView: View {
     private var tabBar: some View {
         HStack(alignment: .top, spacing: 0) {
             tabButton(.home, icon: "house", label: "ホーム")
+            tabButton(.calendar, icon: "calendar", label: "カレンダー")
             tabButton(.exploreMap, icon: "map", label: "探索マップ")
             tabButton(.myPage, icon: "person", label: "マイページ")
         }

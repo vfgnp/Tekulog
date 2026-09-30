@@ -219,12 +219,19 @@ final class WalkRepository: @unchecked Sendable {
     /// `OutingClassifier` の判定結果と、探索グリッドの新規開拓数を書き込む(確定時に一度だけ)。
     /// `classifiedAt` が既に立っていれば書き込まない — ライブ確定とバックフィルが同じセッションを
     /// 二重処理した場合に、後勝ちで正しい値(先に処理した側)を誤って 0 上書きするのを防ぐガード。
+    ///
+    /// ユーザーが先に外出目的を手動で決めていた(`purposeIsUserSet`)場合、目的は上書きしない
+    /// (`setPurpose` は `classifiedAt` を立てないので、保存通知から詳細を開いてすぐ目的を変えると、
+    /// 自動判定のほうが後から届く)。新規開拓数と `classifiedAt` は書く。
+    /// セッションが既に削除されていれば何もしない(分類の通信を待っている間に削除されうる)。
     func finalizeClassification(sessionID: NSManagedObjectID, purpose: OutingPurpose, newCellCount: Int) async throws {
         let context = persistence.newBackgroundContext()
         try await context.perform {
-            guard let session = try context.existingObject(with: sessionID) as? WalkSession,
+            guard let session = try Self.existingSession(sessionID, in: context),
                   session.classifiedAt == nil else { return }
-            session.purpose = purpose
+            if !session.purposeIsUserSet {
+                session.purpose = purpose
+            }
             session.exploredNewCellCount = Int64(newCellCount)
             session.classifiedAt = Date()
             try context.save()
@@ -258,4 +265,82 @@ final class WalkRepository: @unchecked Sendable {
             return (session.objectID, session.activityKind, startedAt, session.totalDistance)
         }
     }
+
+    // MARK: - 探索グリッドの再構築(ExplorationBackfillService)
+
+    /// 確定済みの全セッションを `startedAt` 昇順で返す。グリッド再構築が古い順に再生するために使う。
+    func fetchFinalizedSessions() async throws -> [FinalizedSessionRef] {
+        let context = persistence.newBackgroundContext()
+        return try await context.perform {
+            let request = WalkSession.fetchRequest()
+            request.predicate = NSPredicate(format: "endedAt != nil")
+            request.sortDescriptors = [NSSortDescriptor(key: "startedAt", ascending: true)]
+            return try context.fetch(request).compactMap { session in
+                guard let startedAt = session.startedAt else { return nil }
+                return FinalizedSessionRef(id: session.objectID,
+                                           kind: session.activityKind,
+                                           startedAt: startedAt,
+                                           totalDistance: session.totalDistance,
+                                           isClassified: session.classifiedAt != nil)
+            }
+        }
+    }
+
+    /// 探索グリッドの新規開拓数だけを書き直す。外出目的(`purpose` / `purposeIsUserSet`)と
+    /// `classifiedAt` には触れない。**グリッド再構築(排他ゲート保持中)からしか呼ばないこと** —
+    /// それ以外から呼ぶと、`finalizeClassification` の `classifiedAt` ガードが守っている
+    /// 「後から来た二重処理が正しい値を 0 で上書きしない」が崩れる。
+    /// セッションが既に削除されていれば何もしない。
+    func setExploredNewCellCount(sessionID: NSManagedObjectID, count: Int) async throws {
+        let context = persistence.newBackgroundContext()
+        try await context.perform {
+            guard let session = try Self.existingSession(sessionID, in: context) else { return }
+            session.exploredNewCellCount = Int64(count)
+            try context.save()
+        }
+    }
+
+    /// 外出目的の分類と探索グリッドへの反映が済んでいるか。セッションが既に削除されていれば
+    /// `true`(もう処理する必要がない)を返す。
+    func isClassified(sessionID: NSManagedObjectID) async throws -> Bool {
+        let context = persistence.newBackgroundContext()
+        return try await context.perform {
+            guard let session = try Self.existingSession(sessionID, in: context) else { return true }
+            return session.classifiedAt != nil
+        }
+    }
+
+    /// `fetchRouteCoordinates(for:)` の「削除済みなら `nil`」版。グリッド再構築は、再生の途中で
+    /// 削除されたセッションを失敗ではなく読み飛ばしとして扱うため、削除とそれ以外のエラーを区別する。
+    func fetchRouteCoordinatesIfExists(for sessionID: NSManagedObjectID) async throws -> [CLLocationCoordinate2D]? {
+        let context = persistence.newBackgroundContext()
+        return try await context.perform {
+            try Self.existingSession(sessionID, in: context)?.coordinates
+        }
+    }
+
+    /// `existingObject(with:)` は対象が無いと `NSManagedObjectReferentialIntegrityError` を投げる。
+    /// それだけを「削除済み」(`nil`)として扱い、他のエラーはそのまま投げる。
+    private static func existingSession(_ sessionID: NSManagedObjectID,
+                                        in context: NSManagedObjectContext) throws -> WalkSession? {
+        do {
+            return try context.existingObject(with: sessionID) as? WalkSession
+        } catch let error as NSError
+            where error.domain == NSCocoaErrorDomain && error.code == NSManagedObjectReferentialIntegrityError {
+            return nil
+        }
+    }
+}
+
+/// グリッド再構築(`ExplorationBackfillService`)が確定済みセッションを古い順に再生するための
+/// スナップショット。
+///
+/// `@unchecked Sendable`: `NSManagedObjectID` は不変でスレッド間共有できる。
+struct FinalizedSessionRef: @unchecked Sendable {
+    let id: NSManagedObjectID
+    let kind: ActivityKind
+    let startedAt: Date
+    let totalDistance: Double
+    /// 外出目的の分類が済んでいるか(`classifiedAt != nil`)。
+    let isClassified: Bool
 }

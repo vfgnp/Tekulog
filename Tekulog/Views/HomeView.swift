@@ -116,14 +116,6 @@ struct HomeView: View {
                     .foregroundStyle(TekTheme.sub)
             }
             Spacer()
-            NavigationLink { CalendarView() } label: {
-                Image(systemName: "calendar")
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(TekTheme.ink)
-                    .frame(width: 38, height: 38)
-                    .background(.white, in: Circle())
-                    .shadow(color: TekTheme.cardShadow, radius: 8, y: 4)
-            }
         }
         .padding(.top, 10)
     }
