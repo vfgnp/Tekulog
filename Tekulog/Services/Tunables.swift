@@ -157,6 +157,23 @@ enum Tunables {
     /// 「自宅まわりの開拓率」を計算する範囲の半径(m)。
     static let explorationRateRadiusMeters: Double = 1_500
 
+    // MARK: - 探索マップ(フォグの描画)
+
+    /// 開拓済みセル1つが晴らす範囲の外周の実寸半径(m)。地図上の実寸なので、
+    /// 拡大縮小すると地図と一緒に大きさが変わる。
+    static let explorationRevealRadiusMeters: Double = 150
+
+    /// 晴れの半径のうち、完全に晴れる内側の割合(150m × 0.5 = 75m)。
+    /// 残りは外周に向かって線形にフォグの濃さへ戻る。
+    static let explorationRevealSolidFraction: Double = 0.5
+
+    /// 晴れの画面上の最小半径(pt)。広域表示で実寸がこれより小さくなっても、
+    /// 開拓済みエリアが見えなくならないようにする下限。
+    static let explorationMinRevealScreenRadius: Double = 4
+
+    /// フォグ(黒)の不透明度。
+    static let explorationFogOpacity: Double = 0.55
+
     // MARK: - 外出目的の自動判定(OutingClassifier)
 
     /// 通勤判定: 開始/終了座標がこの半径(m)以内なら「同じ地点」とみなす。
