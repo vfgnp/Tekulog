@@ -110,7 +110,6 @@ final class AsyncGate: Sendable {
 ```swift
 let outingGate = AsyncGate()                                   // 外出単位の排他(FR-6.7)
 let rebuildState = CurrentValueSubject<Bool, Never>(false)     // 再構築中か(FR-6.9)。購読時に現在値が届く
-var isRebuilding: Bool { rebuildState.value }
 ```
 `CurrentValueSubject` は `send` / `value` がスレッド安全で、購読した時点で現在値を流す。フラグの読み取りと変更通知の購読を
 別々に行う方式(取りこぼしの余地がある)を避けるため、これ1つにまとめる。`ExplorationService` は既に `@unchecked Sendable`。
@@ -168,7 +167,8 @@ func fetchRouteCoordinatesIfExists(for sessionID: NSManagedObjectID) async throw
 既存の `fetchRouteCoordinates(for:)` は変更しない。
 外出削除系(`deleteSession`)には手を入れない(FR-6.8)。
 
-既存メソッドの変更(1点): `finalizeClassification` は、`purposeIsUserSet` が true のとき**目的を書かない**(新エリア数と `classifiedAt` は書く)。
+既存メソッドの変更: `finalizeClassification` は (1) 対象が削除済みなら何もしない(上と同じ「削除済み」判定。再構築が未分類の外出を
+分類している間(店舗検索の通信を待つ間)に削除されても、再構築を中止させないため)、(2) `purposeIsUserSet` が true のとき**目的を書かない**(新エリア数と `classifiedAt` は書く)。
 `setPurpose`(利用者の手動変更)は `classifiedAt` を立てないため、未分類のうちに手動で目的を決めた外出へ後から自動判定が届くと上書きしてしまう。
 保存完了通知を確定後処理より前に出すようにした(§5)ことで、「通知から詳細を開いて目的を変える」操作が先に終わる余地が広がるため、ここで塞ぐ(FR-6.5)。
 
@@ -196,7 +196,10 @@ struct OutingPostProcessor: Sendable {
   2. **`isClassified(sessionID)` が true(または確認に失敗)なら何もせず return**(再構築が先に処理した外出の二重処理を避ける。
      再分類のための通信も省ける)
   3. 経路取得 → `classifier.classify(…, home: TekTheme.homeCoordinate())` → `recordVisited` → `finalizeClassification`
-     (`classifiedAt == nil` のときだけ書く既存ガードは維持)
+     (`classifiedAt == nil` のときだけ書く既存ガードは維持)。**`recordVisited` が失敗したら分類済みにせず終える**
+     (未分類のまま残し、次回起動のバックフィルでやり直す。分類済みにすると、歩いた場所が晴れないまま固定される)。
+     分類(通信で数秒かかりうる)は記録より前に済ませる: 記録と新エリア数の保存の間が空くと、その間にプロセスが終了したとき
+     セルだけ保存済みで残り、やり直しでは新規 0 件と数えられて新エリア数が失われる
   入口は既存どおり失敗を握りつぶす(`try?`)。ライブ確定で反映が完了しなかった外出(ゲート待ち・通信中のプロセス終了、経路取得の失敗など)は
   未分類のまま残り、次回起動の未分類バックフィルが拾う(§6。バックフィルは起動のたびに未分類の有無を確認する)。
 - 本体(`replayHoldingGate`)の手順: `fetchRouteCoordinatesIfExists` → nil(削除済み)なら return →
@@ -387,11 +390,12 @@ solidFraction = (pad + revealRadiusMeters * style.solidFraction * pointsPerMeter
 final class FogOverlay: NSObject, MKOverlay, @unchecked Sendable {
     let coordinate = CLLocationCoordinate2D(latitude: 0, longitude: 0)
     let boundingMapRect = MKMapRect.world
-    private let storage = OSAllocatedUnfairLock(initialState: FogCellIndex.empty)
+    private let state = OSAllocatedUnfairLock(initialState: State())   // State = 索引 + 最後に描いたタイルの縮尺
     var index: FogCellIndex { get / set(ロック越し) }
+    var lastDrawnZoomScale: Double { get / set(ロック越し) }          // DEBUG の確認ログ用
 }
 ```
-`@unchecked Sendable` の根拠: 可変状態は `storage` のみで、ロックで保護している。
+`@unchecked Sendable` の根拠: 可変状態は `state` のみで、ロックで保護している。
 
 ### 9.2 `FogOverlayRenderer: MKOverlayRenderer`
 ```swift
@@ -468,6 +472,11 @@ ZStack(alignment: .top) {
 ```
 - 再読込では `ExploreFogMap`(=`MKMapView`)は作り直されないので、(b)(c) では地図の表示位置が保たれる。
 - 購読のスケジューラは `DispatchQueue.main`(`RunLoop.main` は地図のスクロール追跡中に配送されず、完了の反映が操作の終了まで遅れる)。
+- 変化がないときの再読込を軽くする(フォアグラウンドへ戻るたびに走るため):
+  - フォグ: 取得したセルの件数が前回地図へ渡したときと同じなら、索引の差し替え(=全タイルの再描画)を省く。セルは増える一方なので件数で判定できる。
+    再構築完了時は中身が入れ替わっているので必ず差し替える。
+  - フロンティア: 候補の ID(方位-距離)が前回と同じで地名を取得済みなら、逆ジオコーディングをやり直さず前回の地名を使う。
+    地図のマーカーは、題名(地名)が変わったときは付け直す。
 - `reloadAll(home:)`: `reloadSequence += 1` して連番を控え、`loadFog`・`loadExplorationRate`・`loadFrontierCandidates` を並行実行。
   **各読込は結果を状態へ代入する直前に「控えた連番 == 現在の `reloadSequence`」を確認し、違えば捨てる。**
   読込の契機は3つあって重なりうる(再構築中にタブを開いた直後に完了する、など)。先に始めた読込が後から終わったとき、
@@ -586,3 +595,8 @@ enum Tab: Int { case home = 0, calendar, exploreMap, myPage }
 ### 第3回(2026-09-30、同レビュアー)— 判定: 指摘なし(承認)
 
 第2回の1件は解消、修正による新たな問題なし。
+
+### 実装の第三者レビューを受けた設計書の更新(2026-10-01)
+
+実装レビュー(記録は `04-verification.md` §5)の指摘に合わせて、§3.2(`isRebuilding` の削除)、§4(`finalizeClassification` は削除済みなら何もしない)、
+§5(記録に失敗したら分類済みにしない・分類 → 記録 → 保存の順)、§9.1(`FogOverlay` の状態)、§10(変化がないときの再読込の軽量化)を実装に合わせた。
